@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>太行SOLO 运营后台 · 一期 demo</title>
+<style>
+:root{
+  --bg:#f5f6f8;--surface:#fff;--text:#202938;--muted:#697586;--subtle:#8b95a5;
+  --line:#e7ebf0;--soft:#f8fafc;--blue:#2563eb;--blue-hover:#1d4ed8;--blue-soft:#eff6ff;
+  --radius:10px;--control:36px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{height:100%;color-scheme:light}
+body{font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);background:var(--bg);display:flex;height:100vh;height:100dvh;overflow:hidden;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit}
+button,a,input,select{-webkit-tap-highlight-color:transparent}
+button{height:var(--control);padding:0 14px;border:1px solid #dce1e8;border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s,border-color .15s,color .15s}
+button:hover:not(:disabled){background:var(--soft);border-color:#b8c2d0}
+button:active:not(:disabled){background:#edf1f6}
+button.pri{color:#fff;background:var(--blue);border-color:var(--blue)}
+button.pri:hover:not(:disabled){background:var(--blue-hover);border-color:var(--blue-hover)}
+button.link{height:auto;min-height:24px;border:none;background:none;color:var(--blue);padding:0;font-size:13px}
+button.link:hover:not(:disabled){background:none;color:var(--blue-hover);text-decoration:underline;text-underline-offset:3px}
+button:disabled{color:#a7afbc;background:#fafbfc;border-color:var(--line);cursor:not-allowed}
+button.link:disabled{color:#a7afbc;background:none}
+:where(button,a,input,select):focus-visible{outline:2px solid #93b4ff;outline-offset:3px}
+input:not([type="checkbox"]),select{height:var(--control);min-width:0;padding:0 11px;border:1px solid #dce1e8;border-radius:6px;background:#fff;color:var(--text)}
+input::placeholder{color:#919baa}
+input:not([type="checkbox"]):hover,select:hover{border-color:#b8c2d0}
+input:not([type="checkbox"]):focus,select:focus{border-color:#739cf6;outline:0;box-shadow:0 0 0 3px #2563eb12}
+input[type="checkbox"]{width:14px;height:14px;vertical-align:middle;accent-color:var(--blue);cursor:pointer}
+aside{width:200px;flex-shrink:0;background:#111827;color:#aeb8c7;display:flex;flex-direction:column}
+aside h1{height:88px;display:flex;align-items:center;gap:10px;padding:20px 18px;color:#f8fafc;line-height:1.45;font-size:17px;font-weight:600;letter-spacing:.2px;flex-shrink:0}
+aside .brand-logo{display:block;width:32px;height:32px;flex-shrink:0;color:#f8fafc}
+aside .brand-copy{display:block;min-width:0;white-space:nowrap}
+aside h1 small{display:block;margin-top:4px;color:#8793a6;font-size:11px;font-weight:400;letter-spacing:1px}
+#nav{padding:0 10px 20px;overflow-y:auto}
+aside a{position:relative;display:flex;align-items:center;gap:12px;min-height:44px;padding:10px 14px;margin:4px 0;border-radius:6px;color:inherit;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s}
+aside a:hover{background:#ffffff09;color:#f8fafc}
+aside a.on{background:#ffffff12;color:#fff}
+aside a.on::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:#7aa2ff}
+aside .nav-icon{width:20px;height:20px;flex-shrink:0;opacity:.9}
+main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+header{height:60px;min-height:60px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;background:var(--surface);border-bottom:1px solid var(--line)}
+.header-context{display:flex;align-items:center;gap:12px;min-width:0}
+.breadcrumbs{min-width:0;font-size:13px}
+.breadcrumbs ol{display:flex;align-items:center;gap:10px;list-style:none;margin:0;padding:0}
+.breadcrumbs li{display:flex;align-items:center;gap:10px;min-width:0;white-space:nowrap}
+.breadcrumbs .breadcrumb-separator{width:12px;height:12px;color:#bcc5d2;flex-shrink:0}
+button.breadcrumb-link{height:auto;min-height:28px;padding:0;border:0;border-radius:2px;background:none;color:var(--muted);font-size:13px}
+button.breadcrumb-link:hover:not(:disabled){background:none;color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+#current-page{font-size:13px;font-weight:500;white-space:nowrap;color:var(--text)}
+.demo-badge{font-size:11px;line-height:22px;padding:0 7px;border:1px solid var(--line);border-radius:4px;color:var(--muted);white-space:nowrap}
+.role-control{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);white-space:nowrap}
+.role-control select{height:32px;padding:0 9px;font-size:12px}
+#page{flex:1;min-height:0;padding:24px 28px 28px;overflow:auto}
+.head{display:flex;align-items:center;gap:8px;min-height:36px;margin-bottom:20px;flex-shrink:0;flex-wrap:wrap}
+.head h2{font-size:22px;font-weight:600;letter-spacing:-.35px;line-height:1.5;overflow-wrap:anywhere}
+.sp{flex:1}
+.tip{font-size:12px;color:var(--subtle);line-height:1.7}
+.card{padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:20px;min-width:0}
+.sec{margin:20px 0 14px;font-weight:600;font-size:15px;line-height:1.6}
+.card .sec:first-child{margin-top:0}
+.section-heading{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.section-heading .sec{margin:0}
+.bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:20px;flex-shrink:0}
+.bar input,.bar select{font-size:14px}
+.bar .ipt{max-width:100%}
+.bar .ipt input{max-width:100%}
+.bar .search-btn{color:var(--text);background:var(--soft)}
+.ipt{position:relative;display:inline-block;min-width:0}
+.ipt input{padding-right:30px!important}
+.ipt .x{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:16px;height:16px;border:0;border-radius:50%;padding:0;background:#e5e9ef;color:#7d8797;font-size:10px;line-height:16px}
+.ipt .x:hover{background:#dce2eb}
+#page.fill{display:flex;flex-direction:column;overflow:hidden}
+#page.fill .fillcard{flex:1;min-height:0;display:flex;flex-direction:column;margin-bottom:0}
+.fillcard .tw{flex:1;min-height:0}
+.fillcard .bar,.fillcard .pager,.fillcard .seg,.fillcard>p{flex-shrink:0}
+.tw{position:relative;isolation:isolate;overflow:auto;max-width:100%;border:1px solid var(--line);border-radius:7px}
+table{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);font-size:14px}
+th,td{height:44px;padding:10px 14px;border-bottom:1px solid #edf0f4;text-align:left;white-space:nowrap;font-weight:400;line-height:1.7}
+th{height:42px;background:var(--soft);color:var(--muted);font-size:13px;font-weight:500}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#fafbfd}
+.tw th{position:sticky;top:0;z-index:2}
+.tw th.act,.tw td.act{position:sticky;right:0;background:var(--surface);box-shadow:-6px 0 8px -8px #27364f55}
+.tw td.act{z-index:1}
+.tw th.act{background:var(--soft);z-index:3}
+.tw tbody tr:hover td.act{background:#fafbfd}
+th.num,td.num{text-align:right}
+td.num{font-variant-numeric:tabular-nums}
+.row-actions{display:inline-flex;align-items:center;gap:16px}
+.tag{display:inline-block;padding:1px 7px;line-height:20px;font-size:11px;font-weight:400;border-radius:4px;background:#f0f2f5;color:#697586}
+.tag.g{background:#eef8f1;color:#388657}
+.tag.r{background:#fff1f0;color:#c35a54}
+.tag.b{background:#edf3ff;color:#416ab6}
+.seg{display:inline-flex;align-self:flex-start;gap:4px;background:#f3f5f8;border:1px solid #edf0f4;border-radius:7px;padding:3px;margin-bottom:20px}
+.seg button{height:30px;border:0;background:none;padding:0 16px;color:var(--muted);font-size:13px;border-radius:4px}
+.seg button.on{background:#fff;color:var(--text);font-weight:500;box-shadow:0 1px 3px #16243b0b}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap;padding:16px 0 0;min-height:48px;font-size:12px;flex-shrink:0}
+.pager b{font-weight:500;margin-right:4px}
+.pager button{height:28px;min-width:28px;padding:0 7px;font-size:12px;border-color:transparent;color:var(--muted)}
+.pager button.on{background:var(--blue-soft);border-color:transparent;color:var(--blue);font-weight:500}
+.pager button:disabled{background:none;color:#c5ccd7;border-color:transparent}
+.pager select{height:28px;padding:0 7px;font-size:12px}
+.pager .tip{font-size:12px}
+.empty{padding:48px 20px;text-align:center;color:var(--muted);line-height:1.8}
+.empty-ico{display:flex;align-items:center;justify-content:center;width:36px;height:36px;margin:0 auto 10px;border-radius:8px;background:#f4f6f9;color:#acb6c6}
+.empty-ico svg{width:22px;height:22px}
+.empty b{font-size:13px;font-weight:500;color:var(--muted)}
+.empty .tip{margin-top:3px}
+.fillcard .tw:has(.empty) table{height:100%}
+.fillcard .tw td:has(.empty){vertical-align:middle}
+/* 基本信息按身份、关键数据、时间分组，让余额成为清晰的视觉落点。 */
+.detail-card{padding:22px 24px 0}
+.overview-main{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:32px;padding-bottom:20px}
+.overview-identity{min-width:0}
+.overview-caption{font-size:12px;font-weight:400;color:var(--muted);margin-bottom:5px}
+.overview-name{font-size:18px;font-weight:600;line-height:1.5;overflow-wrap:anywhere;color:var(--text)}
+.overview-meta{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 20px;margin-top:9px;font-size:13px;color:var(--text)}
+.overview-meta .label{margin-right:7px;color:var(--muted);font-size:12px}
+.overview-metrics{display:grid;grid-template-columns:repeat(3,max-content);align-items:start;gap:32px;padding-left:32px;border-left:1px solid var(--line)}
+.overview-metric{min-width:90px}
+.overview-metric dt{font-size:12px;color:var(--muted);font-weight:400;margin-bottom:8px;white-space:nowrap}
+.overview-metric dd{font-size:16px;line-height:34px;white-space:nowrap;color:var(--text)}
+.overview-metric.primary dd{font-size:28px;font-weight:600;letter-spacing:-.5px}
+.overview-times{display:flex;flex-wrap:wrap;gap:8px 28px;border-top:1px solid var(--line);padding:13px 0 15px}
+.overview-time{display:flex;align-items:baseline;gap:10px;line-height:1.7}
+.overview-time dt{font-size:12px;font-weight:400;color:var(--muted)}
+.overview-time dd{font-size:13px;color:var(--muted)}
+@media(max-width:1050px){.overview-main{gap:24px}.overview-metrics{gap:20px;padding-left:24px}.overview-metric{min-width:76px}.overview-meta{gap:6px 12px}}
+@media(max-width:900px){.overview-main{grid-template-columns:1fr;gap:20px}.overview-metrics{justify-content:start;border-left:0;border-top:1px solid var(--line);padding:18px 0 0;gap:32px}.overview-times{gap:8px 20px}}
+@media(max-width:780px){.card.detail-card{padding:18px 18px 0}.overview-metrics{gap:24px;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}.overview-metric{min-width:0}.overview-metric dd{font-size:14px}.overview-metric.primary dd{font-size:24px}.overview-name{font-size:17px}.overview-times{padding-bottom:14px}}
+@media(max-width:480px){.overview-metrics{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:14px}.overview-metric:last-child{grid-column:1/-1}}
+.detail-tabs{display:flex;align-items:center;gap:24px;border-bottom:1px solid var(--line);margin:-4px 0 20px;overflow-x:auto;flex-shrink:0}
+.detail-tabs button{position:relative;height:43px;padding:0 0 13px;border:0;border-radius:0;background:none!important;color:var(--muted);font-size:14px}
+.detail-tabs button.on{color:var(--blue);font-weight:500}
+.detail-tabs button.on::after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;border-radius:2px;background:var(--blue)}
+.tab-count{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;background:#f1f3f7;border-radius:4px;font-size:11px;line-height:18px;color:var(--muted);font-weight:400}
+.detail-tabs button.on .tab-count{background:#edf3ff;color:var(--blue)}
+.detail-note{margin:-4px 0 14px;font-size:12px;color:var(--muted);line-height:1.7}
+.detail-panel .empty{padding:32px 20px}
+.mask{position:fixed;z-index:1000;inset:0;display:none;align-items:center;justify-content:center;overflow:auto;background:#0f172a59;padding:24px 20px}
+.dlg{display:flex;flex-direction:column;width:520px;max-width:100%;max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);background:#fff;border:1px solid #e4e8ee;border-radius:12px;overflow:hidden;box-shadow:0 20px 64px #0f172a24}
+.dlg.wide{width:820px}
+.dlg-hd{position:relative;flex-shrink:0;padding:20px 24px 16px;border-bottom:1px solid var(--line)}
+.dlg-hd h3{padding-right:32px;font-size:16px;line-height:1.5;font-weight:600;overflow-wrap:anywhere}
+.dlg-hd>button.link{margin-bottom:8px}
+.dlg-x{position:absolute;top:14px;right:16px;width:28px;height:28px;border:0;background:none;color:var(--subtle);font-size:16px;padding:0;border-radius:5px}
+.dlg-x:hover{color:var(--text)}
+.dlg-bd{flex:1;min-height:0;padding:20px 24px;overflow:auto}
+.ft{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:20px}
+.dlg-ft{flex-shrink:0;padding:14px 24px;margin:0;border-top:1px solid var(--line);background:#fff}
+.f{margin-bottom:18px}
+.f:last-child{margin-bottom:0}
+.f label{display:block;margin-bottom:7px;font-size:13px;color:#586475}
+.f input,.f select{width:100%}
+.row{display:flex;align-items:center;gap:8px}
+.row input{flex:1;min-width:0}
+.hint{font-size:12px;line-height:1.7;margin-top:6px}
+.err{color:#c4504c}.ok{color:#388657}
+.sum{padding:14px 16px;background:var(--soft);border:1px solid var(--line);border-radius:7px;font-size:13px;line-height:2;overflow-wrap:anywhere}
+.sum b{font-weight:600}
+.kv{width:100%;border-collapse:collapse}
+.kv td{height:auto;white-space:normal;vertical-align:top;padding:11px 12px;border-bottom:1px solid #edf0f4;overflow-wrap:anywhere;line-height:1.8}
+.kv td.k{width:28%;min-width:100px;color:var(--muted)}
+.kv tr:hover td{background:none}
+.kv tr:last-child td{border-bottom:0}
+.toast{position:fixed;z-index:1100;top:20px;left:50%;transform:translateX(-50%);display:none;max-width:calc(100vw - 40px);padding:10px 16px;background:#202938;color:#fff;border-radius:7px;box-shadow:0 6px 24px #0f172a1a;font-size:13px}
+.tipwrap{position:relative;display:inline-block}
+.tipwrap button{pointer-events:none}
+.tipwrap:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);right:0;background:#202938;color:#fff;font-size:12px;padding:6px 10px;border-radius:5px;white-space:nowrap;z-index:10}
+.doc{max-width:1100px;padding:24px 28px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);font-size:14px;line-height:1.9}
+.doc h3{font-size:16px;font-weight:600;margin:28px 0 10px;color:var(--text)}
+.doc p,.doc li{margin:8px 0;color:#556173}
+.doc p:first-child{margin-top:0}
+.doc b{font-weight:600;color:#364152}
+.doc ul{padding-left:20px}
+.doc td{white-space:normal;vertical-align:top;min-width:100px;line-height:1.8}
+.doc .tw{margin:14px 0}
+.doc th{white-space:normal;min-width:100px}
+body.ro .admin-only{display:none!important}
+*{scrollbar-width:thin;scrollbar-color:#d6dce5 transparent}
+aside *{scrollbar-color:#3f4b5f transparent}
+@media(min-width:1600px){#page{padding:28px 32px 32px}header{padding:0 32px}}
+@media(max-width:1150px){aside{width:184px}header{padding:0 20px}#page{padding:20px}.head h2{font-size:20px}.bar .sp{display:none}.bar input{max-width:210px}}
+@media(max-width:780px){aside{width:64px}aside h1{height:72px;justify-content:center;padding:20px 0}aside .brand-logo{width:30px;height:30px}aside .brand-copy{display:none}#nav{padding:0 6px 16px}aside a{justify-content:center;padding:12px 0}aside a span{display:none}aside a.on::before{top:15px;bottom:15px}header{height:54px;min-height:54px;padding:0 16px;gap:10px}.header-context{gap:8px}.role-control{gap:6px}.demo-badge{display:none}#page{padding:18px 16px}.head{margin-bottom:16px}.head h2{font-size:19px;flex-basis:100%}.head>.sp{display:none}.card{padding:16px;margin-bottom:16px}.bar{gap:8px;margin-bottom:16px}.bar .ipt{flex:1 1 180px}.bar .ipt input{width:100%!important;max-width:none}.bar>select{max-width:100%}.pager{gap:4px}.pager .sp{display:none}.doc{padding:18px}.mask{padding:16px}.dlg{max-height:calc(100dvh - 32px)}.dlg-hd{padding:18px 20px 14px}.dlg-bd{padding:18px 20px}.dlg-ft{padding:12px 20px}.detail-tabs{gap:22px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.f label .req{color:#dc2626;margin-left:2px}
+.f .radios{display:flex;gap:24px;padding:4px 0}
+.f .radios label{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:14px;color:#1f2937;cursor:pointer;white-space:nowrap}
+.f .radios input{width:auto;height:auto;margin:0;padding:0;accent-color:#2563eb}
+.f input:disabled{background:#f3f4f6;color:#6b7280;cursor:not-allowed}
+.dr{position:relative;display:inline-block}
+.dr-btn{background:#fff;white-space:nowrap}
+.dr-btn.set{color:#1d4ed8;border-color:#93c5fd}
+.dr-pop{position:absolute;top:calc(100% + 6px);left:0;z-index:30;display:flex;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 8px 24px rgba(15,23,42,.12)}
+.dr-presets{display:flex;flex-direction:column;padding:8px;border-right:1px solid #f3f4f6;min-width:112px}
+.dr-presets button{border:none;background:none;text-align:left;padding:7px 10px;border-radius:6px;color:#374151}
+.dr-presets button:hover{background:#f3f4f6}
+.dr-presets button.on{background:#eff6ff;color:#1d4ed8;font-weight:600}
+.dr-custom{padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;gap:16px}
+.dr-row{display:flex;align-items:flex-end;gap:8px}
+.dr-row label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#6b7280}
+.dr-row input{padding:6px 8px;border:1px solid #d1d5db;border-radius:4px}
+.dr-ft{display:flex;justify-content:flex-end;gap:8px}
+</style>
+</head>
+<body>
+<aside>
+  <h1><svg class="brand-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 345 350" fill="currentColor" aria-hidden="true" focusable="false"><path d="M146.7+14.9C137.3+31.5+121.1+65.5+109.3+93.7C109+94.4+111+96+113.9+97.5L119+100.1L120.9+95.8C133.3+66.8+143.8+45.5+161.1+14.3L163.9+9.1L159+6.1C156.2+4.4+153.9+3+153.7+3C153.6+3+150.4+8.4+146.7+14.9Z"  />
+<path d="M178.5+47.1C164.2+68.6+152.4+86.6+152.2+87C152+87.4+154.1+89.3+156.8+91.3L161.8+94.8L188.6+56.3C203.3+35.1+215.5+16.8+215.7+15.6C216.1+13.9+215.1+13+210.5+10.7C207.5+9.2+204.9+8+204.7+8C204.6+8+192.8+25.6+178.5+47.1Z"  />
+<path d="M219+55.1C197.7+88.7+194.7+94+196.7+94C197.1+94+199.8+95.5+202.6+97.3L207.7+100.7L229.6+65.2C241.6+45.7+251.5+29.2+251.5+28.7C251.5+28.1+249.2+26+246.4+23.9L241.2+20.1L219+55.1Z"  />
+<path d="M86.9+29.5C78.6+47.9+73+80.8+73+111.7L73+121L78.3+121L83.6+121L84.8+95.2C86.1+66.4+86.9+61.8+93.9+40.8L98.8+26.1L94.3+24.6L89.8+23.1L86.9+29.5Z"  />
+<path d="M259+52.7C248.2+76.5+241.3+88.2+232.6+97.4C230.1+100.2+228+102.7+228+103.1C228+103.5+230.6+106.2+233.7+109L239.5+114.3L244.3+108.9C254.9+97+268.1+75+275.3+57C280.9+43+281+43.7+273.7+41.2C270.3+40+267+39+266.4+39C265.8+39+262.5+45.2+259+52.7Z"  />
+<path d="M290.5+62.2C269.5+124.8+223.1+176.7+160.5+207.4C118.1+228.3+75+237.1+26.3+234.8C13.3+234.2+11.3+234.3+10.2+235.8C8.5+238+8.7+240.7+10.5+241.4C11.4+241.7+18.5+242.9+26.3+244.1C43+246.7+76.8+247.2+91+245.1C148.6+236.7+195.7+212.5+239+169C263.2+144.7+282.6+117.8+298+86.7C302.9+76.8+307+68.1+307+67.4C307+66.8+303.7+65.1+299.6+63.6C291+60.6+291.1+60.6+290.5+62.2Z"  />
+<path d="M33.3+84.2C34.2+101.9+36.6+112.3+45.7+138.7C49.1+148.7+50.7+151.9+52.2+152.3C54.4+152.9+60+151.2+60+150C60+149.5+57.3+141.3+54+131.8C45.8+108.5+43+96.9+42.3+83.2L41.7+72L37.2+72L32.7+72L33.3+84.2Z"  />
+<path d="M301.7+104.5C295.1+124.4+283.1+146.7+269.1+164.7C237+206.1+187+239.5+133.1+255.5C107.4+263.1+81.6+267+54.3+267.3L38+267.5L38+275.6L38+283.7L44.7+284.3C56.3+285.4+81+285+92+283.6C140.8+277.1+191.8+254.4+235+220C257.2+202.3+281.8+176+296.1+154.5C307.7+137.1+321.8+105.3+320.8+98.7C320.6+97+319.2+96.3+313.5+94.8C309.7+93.8+306.3+93+306+93C305.7+93+303.7+98.2+301.7+104.5Z"  />
+<path d="M322.5+133.7C301+178.5+269.1+217.3+229.7+246.8C214.4+258.3+203.2+265+184.5+274.1C150.6+290.6+114.2+299+76.8+299L65+299L65+301.9C65+303.4+64.7+306.8+64.4+309.2L63.8+313.8L71.1+315C96.5+319.3+138.6+309.6+184.2+289C232.8+267+270.2+235.6+300.3+191.5C320.7+161.6+332+139.5+334.4+124.9C335+121.7+334.8+121.2+332.8+120.6C331.5+120.3+330.2+120+329.8+120C329.4+120+326.2+126.2+322.5+133.7Z"  />
+<path d="M4.1+136.3C2.7+136.9+1.5+137.9+1.3+138.5C0.7+140.4+18+160+24.3+164.6C32+170.3+41.1+175+44.5+175C46.7+175+47+174.6+47+171.7C47+168.7+46.5+168.3+37.4+163.5C28.4+158.9+27+157.7+17.3+146.7C11.6+140.3+6.8+135+6.7+135C6.6+135+5.4+135.6+4.1+136.3Z"  />
+<path d="M326.7+174.5C317+188.6+314+193.5+314.5+195.1C316+199.7+319.2+196.8+332.2+179C339.2+169.4+345+161+345+160.3C345+158.8+342.2+156+340.6+156C340+156+333.7+164.3+326.7+174.5Z"  />
+<path d="M0.9+192.6C0.4+194.1+0.1+195.4+0.2+195.5C0.4+195.6+3.4+196.7+7+197.8C16.7+201+26.3+202.8+37.9+203.6L48.2+204.3L47.8+201.5C47.5+198.8+47+198.5+38.5+196.4C29.5+194.1+7.1+190+3.7+190C2.7+190+1.5+191.2+0.9+192.6Z"  />
+<path d="M317.5+211.5C307.6+216.7+299.4+221.4+299.2+222C298.5+224+301.2+228+303.2+228C306.9+228+315.8+224.2+324.9+218.6C330.1+215.5+336.1+212+338.4+210.8C340.7+209.7+342.6+208.7+342.8+208.5C342.9+208.4+342.5+206.9+341.9+205.2C341+202.6+340.3+202+338.2+202.1C336.7+202.1+327.4+206.4+317.5+211.5Z"  />
+<path d="M293.2+247.2C293.5+251.2+293.8+251.6+297.5+252.8C300.3+253.8+305.2+254.1+314.3+253.8C321.3+253.5+327.2+253.1+327.4+252.9C327.6+252.7+328+250.4+328.2+247.7L328.8+243L310.8+243L292.9+243L293.2+247.2Z"  />
+<path d="M280+263.5C278.8+264.8+278+266.5+278.2+267.4C278.3+268.3+283.2+273.3+289+278.5C300.4+288.7+303.5+290+306.4+285.8C309.1+282+308.3+279.9+301.8+274.1C288.5+262+283.6+259.6+280+263.5Z"  />
+<path d="M262.8+280.8C259.4+281.2+259.4+281.9+261.8+302.5L263.5+316.5L269.8+316.8C275.9+317.1+276+317+275.6+314.8C275.3+313.5+274.1+305.8+272.9+297.5C271.8+289.3+270.6+282.2+270.4+281.9C269.9+281+266+280.4+262.8+280.8Z"  />
+<path d="M232.5+310.7C230.5+317.2+228.5+323.8+227.9+325.4C227.4+327+227+329.6+227+331.1C227+333.5+227.5+334.1+230.8+334.9C238.7+337+237.8+338.1+243.1+319.5C245.8+310.1+248+302.2+248+301.9C248+301.4+239+299+237+299C236.5+299+234.5+304.3+232.5+310.7Z"  />
+<path d="M189.3+321.3C178.7+329.5+172+335.4+171.6+336.8C171.1+338.5+171.9+340.2+174.6+343.5C176.6+346+178.7+348+179.2+348C179.9+348+212.4+322.6+216.8+318.5C217.8+317.6+217.2+316.4+213.9+312.7C211.7+310.1+209.1+308+208.2+308.1C207.2+308.1+198.8+314.1+189.3+321.3Z"  />
+<path d="M142+318.1C129.6+323.1+119.2+327.5+118.9+327.8C118.6+328.2+119.1+331.3+120.2+334.7L122.1+340.9L148.2+332C162.6+327+174.7+322.4+175.2+321.7C176.3+320+176.2+319.2+174.4+315.4C172.5+311.4+169.5+309+166.5+309C165.4+309.1+154.4+313.2+142+318.1Z"  /></svg><span class="brand-copy">太行 SOLO<small>运营管理后台</small></span></h1>
+  <div id="nav"></div>
+</aside>
+<main>
+  <header>
+    <div class="header-context"><nav id="breadcrumbs" class="breadcrumbs" aria-label="面包屑"><ol><li><span id="current-page" aria-current="page">用户管理</span></li></ol></nav><span class="demo-badge" title="当前页面使用示例数据">演示环境</span></div>
+    <span class="role-control">演示身份
+      <select id="role" onchange="setRole(this.value)">
+        <option value="admin">管理员</option>
+        <option value="ro">只读人员</option>
+      </select>
+    </span>
+  </header>
+  <div id="page"></div>
+</main>
+<div class="mask" id="mask"><div class="dlg" id="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ---------- 假数据 ----------
+const TIERS=[ // 团队档位，按提供的定价图更新
+  {name:'基础',price:19999,pts:240000},
+  {name:'高级',price:29999,pts:372000},
+  {name:'豪华',price:49999,pts:640000},
+  {name:'尊享',price:99999,pts:1320000},
+];
+const users=[
+  {id:10001,phone:'13800000001',nick:'林导',reg:'2026-09-20',last:'2026-11-01',vip:'高级',exp:'2026-11-18',pts:7620},
+  {id:10002,phone:'13800000002',nick:'崧果-王总',reg:'2026-09-21',last:'2026-11-02',vip:'—',exp:'—',pts:300},
+  {id:10003,phone:'13800000003',nick:'小周',reg:'2026-10-02',last:'2026-10-30',vip:'基础',exp:'2026-11-05',pts:820},
+  {id:10004,phone:'13800000004',nick:'阿杰',reg:'2026-10-10',last:'2026-10-28',vip:'—',exp:'—',pts:0},
+  {id:10005,phone:'13800000005',nick:'测试号',reg:'2026-10-12',last:'2026-10-12',vip:'—',exp:'—',pts:100},
+];
+const teams=[
+  {id:'T2001',owner:10002,members:[[10002,'主账号','—',41200],[10003,'组长','小周的小组',8000],[10004,'普通用户','小周的小组',2600]],
+   paid:99999,created:'2026-10-20',lastPay:'2026-10-20',
+   batches:[{id:'B9001',pts:1320000,left:1800,dist:10600,exp:'2027-04-18',src:'套餐 O20261020001'},{id:'B9002',pts:50000,left:50000,held:2000,exp:'2027-04-18',src:'调整 G3001'}]},
+];
+const orders=[
+  {no:'O20260925003',uid:10001,acct:'个人',type:'通用积分',tier:'—',amt:30,pts:300,pay:'支付宝',ref:'2026092522001…',st:'已支付',t:'2026-09-25 20:11',op:'—',batch:'B7001',wd:0},
+  {no:'O20261001002',uid:10002,acct:'个人',type:'通用积分',tier:'—',amt:30,pts:300,pay:'支付宝',ref:'2026100122001…',st:'已支付',t:'2026-10-01 09:30',op:'—',batch:'B7002',wd:0},
+  {no:'O20261006004',uid:10003,acct:'个人',type:'个人订阅（开通）',tier:'基础',amt:99,pts:1070,pay:'支付宝',ref:'2026100622001…',st:'已支付',t:'2026-10-06 14:05',op:'—',batch:'B7003',wd:0},
+  {no:'O20261010006',uid:10004,acct:'个人',type:'个人订阅（开通）',tier:'基础',amt:99,pts:1070,pay:'支付宝',ref:'2026101022001…',st:'已支付',t:'2026-10-10 18:40',op:'—',batch:'B7004',wd:0},
+  {no:'O20261020001',uid:10002,acct:'崧果-王总的团队',type:'团队会员（线下）',tier:'尊享',amt:99999,pts:1320000,pay:'线下对公',ref:'HT-2026-018',st:'已支付',t:'2026-10-20 15:02',op:'admin-陈',batch:'B9001',wd:0},
+  {no:'O20261018007',uid:10001,acct:'个人',type:'个人订阅（开通）',tier:'高级',amt:699,pts:7750,pay:'支付宝',ref:'2026101822001…',st:'已支付',t:'2026-10-18 10:21',op:'—',batch:'B8001'},
+  {no:'O20261025013',uid:10003,acct:'个人',type:'通用积分',tier:'—',amt:30,pts:300,pay:'支付宝',ref:'2026102522001…',st:'已支付',t:'2026-10-25 21:40',op:'—',batch:'B8101'},
+];
+const flows=[
+  {t:'2026-09-25 20:11',acct:'个人',uid:10001,type:'用户充值',d:300,bal:300,batch:'B7001',rel:'O20260925003',op:'—'},
+  {t:'2026-10-01 09:30',acct:'个人',uid:10002,type:'用户充值',d:300,bal:300,batch:'B7002',rel:'O20261001002',op:'—'},
+  {t:'2026-10-06 14:05',acct:'个人',uid:10003,type:'用户充值',d:1070,bal:1070,batch:'B7003',rel:'O20261006004',op:'—'},
+  {t:'2026-10-10 18:40',acct:'个人',uid:10004,type:'用户充值',d:1070,bal:1070,batch:'B7004',rel:'O20261010006',op:'—'},
+  {t:'2026-10-12 11:00',acct:'个人',uid:10005,type:'积分调整',d:100,bal:100,batch:'B7005',rel:'G2999',op:'admin-陈'},
+  {t:'2026-11-01 14:20',acct:'崧果-王总的团队',uid:10004,type:'生成结算（多退）',d:20,bal:2600,batch:'B9001',rel:'J88213',op:'—'},
+  {t:'2026-11-01 14:18',acct:'崧果-王总的团队',uid:10004,type:'生成预扣',d:-150,bal:2580,batch:'B9001',rel:'J88213',op:'—'},
+  {t:'2026-11-01 11:03',acct:'个人',uid:10001,type:'失败释放',d:62,bal:5120,batch:'B8001',rel:'J88190',op:'—'},
+  {t:'2026-11-01 11:02',acct:'个人',uid:10001,type:'生成预扣',d:-62,bal:5058,batch:'B8001',rel:'J88190',op:'—'},
+  {t:'2026-10-21 09:10',acct:'崧果-王总的团队',uid:10003,type:'团队分配',d:10000,bal:10000,batch:'B9001',rel:'—',op:'崧果-王总'},
+  {t:'2026-10-20 15:03',acct:'崧果-王总的团队',uid:10002,type:'积分调整',d:50000,bal:1370000,batch:'B9002',rel:'G3001',op:'admin-陈'},
+  {t:'2026-10-20 15:02',acct:'崧果-王总的团队',uid:10002,type:'后台充值',d:1320000,bal:1320000,batch:'B9001',rel:'O20261020001',op:'admin-陈'},
+];
+const tasks=[
+  {id:'J88213',uid:10004,acct:'崧果-王总的团队',proj:'重生之嫡女 第3集',kind:'视频',model:'Seedance 2.0',res:'720P',dur:'0+10s',pre:150,real:130,st:'成功',why:'—',refund:'—',t:'2026-11-01 14:18',done:'2026-11-01 14:20'},
+  {id:'J88190',uid:10001,acct:'个人',proj:'黑猫当铺 EP1',kind:'视频',model:'Seedance 2.0 Fast',res:'720P',dur:'5+5s',pre:62,real:0,st:'失败',why:'审核拦截',refund:'是',t:'2026-11-01 11:02',done:'2026-11-01 11:03',refs:2},
+];
+const gifts=[
+  {id:'G2999',t:'2026-10-12 11:00',acct:'个人',uid:10005,pts:100,exp:'2026-11-11',cat:'内测',why:'测试金',ord:'',op:'admin-陈',batch:'B7005',wd:0},
+  {id:'G3001',t:'2026-10-20 15:03',acct:'崧果-王总的团队',uid:10002,pts:50000,exp:'2027-04-18',cat:'赠送',why:'首单加送（商务约定）',ord:'O20261020001',op:'admin-陈',batch:'B9002',wd:0},
+  {id:'G3000',t:'2026-10-31 10:00',acct:'个人',uid:10001,pts:4000,exp:'2026-11-30',cat:'内测',why:'测试金',ord:'',op:'admin-陈',batch:'B8002',wd:0},
+];
+// 演示分页用：给阿杰补 45 个历史生成任务和对应的预扣 / 结算流水（10 月）
+for(let i=1;i<=45;i++){const id='J87'+String(100+i),day=String(1+(i%28)).padStart(2,'0'),t=`2026-10-${day} ${String(9+i%10).padStart(2,'0')}:00`,cost=40+(i%5)*20;
+  tasks.push({id,uid:10004,acct:'崧果-王总的团队',proj:'重生之嫡女 第'+(1+i%3)+'集',kind:i%4?'视频':'图片',model:i%4?'Seedance 2.0':'Seedream 5.0',res:'720P',dur:i%4?'0+5s':'—',pre:cost,real:cost,st:'成功',why:'—',refund:'—',t,done:t});
+  flows.push({t,acct:'崧果-王总的团队',uid:10004,type:'生成预扣',d:-cost,bal:2600+i*10,batch:'B9001',rel:id,op:'—'},{t,acct:'崧果-王总的团队',uid:10004,type:'生成结算',d:0,bal:2600+i*10,batch:'B9001',rel:id,op:'—'})}
+// 个人积分批次（团队的批次在 teams[].batches）
+const ub={
+  10001:[{id:'B8001',pts:7750,left:5120,exp:'2026-11-18',src:'订阅 O20261018007'},{id:'B8002',pts:4000,left:2500,exp:'2026-11-30',src:'调整 G3000'},{id:'B7001',pts:300,left:0,exp:'2027-03-24',src:'通用积分 O20260925003'}],
+  10002:[{id:'B7002',pts:300,left:300,exp:'2027-03-30',src:'通用积分 O20261001002'}],
+  10003:[{id:'B8101',pts:300,left:300,exp:'2027-04-23',src:'通用积分 O20261025013'},{id:'B7003',pts:1070,left:520,exp:'2026-11-05',src:'订阅 O20261006004'}],
+  10004:[{id:'B7004',pts:1070,left:0,exp:'2026-11-09',src:'订阅 O20261010006'}],
+  10005:[{id:'B7005',pts:100,left:100,exp:'2026-11-11',src:'调整 G2999'}]};
+const logs=[
+  {t:'2026-10-20 15:02',op:'admin-陈',type:'创建团队',obj:'T2001',before:'—',after:'主账号 13800000002，尊享，1,320,000 积分',note:'合同 HT-2026-018'},
+];
+const admins=[
+  {acct:'13900000001',name:'陈',role:'管理员',st:'启用',created:'2026-10-15',last:'2026-11-02'},
+  {acct:'13900000002',name:'李',role:'只读人员',st:'启用',created:'2026-10-15',last:'2026-11-01'},
+];
+
+// ---------- 工具 ----------
+let role='admin',cur='用户管理';
+const $=s=>document.querySelector(s);
+const U=id=>users.find(u=>u.id===id);
+const phone=p=>p;
+const n=x=>x.toLocaleString();
+const teamName=t=>U(t.owner).nick+'的团队';
+const teamPts=t=>t.members.reduce((s,m)=>s+m[3],0);
+const now=()=>{const d=new Date();return d.toISOString().slice(0,10)+' '+d.toTimeString().slice(0,5)};
+const addDays=k=>{const d=new Date();d.setDate(d.getDate()+k);return d.toISOString().slice(0,10)};
+function toast(m){const e=$('#toast');e.textContent=m;e.style.display='block';setTimeout(()=>e.style.display='none',2200)}
+function openDlg(html,wide){
+  // 把传进来的内容拆成：标题栏（标题 + ✕）/ 内容区 / 按钮栏
+  const dlg=$('#dlg'),tmp=document.createElement('div');tmp.innerHTML=html;
+  const hd=document.createElement('div'),bd=document.createElement('div');hd.className='dlg-hd';bd.className='dlg-bd';
+  const h3=tmp.querySelector(':scope > h3');
+  if(h3){h3.id='dlg-title';hd.appendChild(h3)}
+  hd.insertAdjacentHTML('beforeend','<button class="dlg-x" onclick="closeDlg()" title="关闭" aria-label="关闭弹窗">✕</button>');
+  const ft=[...tmp.children].filter(c=>c.classList.contains('ft')).pop();if(ft){ft.remove();ft.classList.add('dlg-ft')}
+  while(tmp.firstChild)bd.appendChild(tmp.firstChild);
+  dlg.className='dlg'+(wide?' wide':'');dlg.innerHTML='';dlg.append(hd,bd);if(ft)dlg.append(ft);$('#mask').style.display='flex'}
+function closeDlg(){$('#mask').style.display='none'}
+// 分页：列表页、详情页里的成员 / 积分批次都用（同一页多张表时各用各的 key）。每页默认 20 条，可选 20 / 50 / 100；改搜索条件、切每页条数回到第 1 页
+let pg={};
+const PS=[20,50,100];
+// 勾选：只在当前页内勾，翻页 / 改搜索 / 切 tab 时自动清空。ids 不传就没有勾选列（成员、批次这类不能导出的表）
+let sel=new Set(),selFor='',pageIds=[],expTotal=0;
+function ptable(cols,rows,ids,k=qk()){const st=pg[k]||(pg[k]={p:1,size:20}),total=rows.length,pages=Math.max(1,Math.ceil(total/st.size));
+  if(st.p>pages)st.p=pages;
+  const from=(st.p-1)*st.size,nums=[];
+  const sk=[k,st.p,st.size,q[k]||'',pq[k]||''].join('#');if(sk!==selFor){sel.clear();selFor=sk}
+  if(ids){expTotal=total;
+    if(role==='admin'){pageIds=ids.slice(from,from+st.size);const all=pageIds.length&&pageIds.every(i=>sel.has(String(i)));
+      cols=[`<input type="checkbox" title="全选本页" ${all?'checked':''} onclick="selAll(this.checked)">`,...cols];
+      rows=rows.map((r,i)=>[`<input type="checkbox" ${sel.has(String(ids[i]))?'checked':''} onclick="toggleSel('${ids[i]}')">`,...r])}}
+  for(let i=1;i<=pages;i++)if(i===1||i===pages||Math.abs(i-st.p)<=2)nums.push(i);else if(nums[nums.length-1]!=='…')nums.push('…');
+  const searching=(q[k]||pq[k]||'').trim(),
+    empty=`<div class="empty"><div class="empty-ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-5H8Z"/><path d="M16 3v5h5M8 13h8M8 17h5"/></svg></div><b>${searching?'未找到相关记录':'暂无记录'}</b><div class="tip">${searching?'试试调整搜索条件或时间范围':'有数据后会显示在这里'}</div></div>`;
+  return table(cols,rows.slice(from,from+st.size),empty)+`<div class="pager"><span class="sp"></span><span class="tip">总计：</span><b>${total}</b><span class="tip" style="margin-left:10px">每页行数</span>
+  <select onchange="setSize(+this.value,'${k}')">${PS.map(z=>`<option value="${z}" ${z===st.size?'selected':''}>${z}</option>`).join('')}</select>
+  <button ${st.p===1?'disabled':''} onclick="goPage(1,'${k}')" title="首页">«</button><button ${st.p===1?'disabled':''} onclick="goPage(${st.p-1},'${k}')">‹</button>${nums.map(i=>i==='…'?'<span class="tip">…</span>':`<button class="${i===st.p?'on':''}" onclick="goPage(${i},'${k}')">${i}</button>`).join('')}<button ${st.p===pages?'disabled':''} onclick="goPage(${st.p+1},'${k}')">›</button><button ${st.p===pages?'disabled':''} onclick="goPage(${pages},'${k}')" title="末页">»</button></div>`}
+function goPage(i,k=qk()){pg[k].p=i;render()}
+function toggleSel(id){sel.has(id)?sel.delete(id):sel.add(id);render()}
+function selAll(on){pageIds.forEach(i=>on?sel.add(String(i)):sel.delete(String(i)));render()}
+function clearSel(){sel.clear();render()}
+// 导出按钮：没勾选 = 导出当前筛选条件下的全部结果；勾选了 = 只导出所选
+function syncExport(){const b=$('#expBtn');if(!b)return;
+  b.textContent=sel.size?'导出所选':'导出全部';
+  if(sel.size)b.insertAdjacentHTML('beforebegin',`<span class="tip admin-only">已选 ${sel.size} 条</span><button class="link admin-only" onclick="clearSel()">取消选择</button>`)}
+function doExport(){const k=sel.size||expTotal;if(k>10000){toast('导出条数超过 1 万，请缩小时间范围');return}
+  const where=cur+(cur==='订单管理'?' · '+otab:'');
+  logs.unshift({t:now(),op:'admin-陈',type:'导出',obj:where,before:'—',after:`${k} 条`,note:sel.size?'所选':'全部筛选结果'});
+  toast(`已导出 ${k} 条（Excel）`);sel.clear();render()}
+function setSize(z,k=qk()){pg[k]={p:1,size:z};render()}
+// 表格：外面包一层，列多时在卡片内左右滚动；最后一列是操作列（表头为空）时固定在最右侧
+const NUM_COLS=new Set(['调整积分','实付','积分','变动','变动后余额','应扣','实扣','参考图','个人积分','加入团队','团队积分余额','累计实付','团队内积分','积分余额','初始积分','剩余积分','数量','剩余','剩余（主账号）','预扣中']);
+function table(cols,rows,empty='暂无数据'){
+  const act=cols[cols.length-1]==='',c=i=>{const names=[act&&i===cols.length-1?'act':'',NUM_COLS.has(cols[i])?'num':''].filter(Boolean);return names.length?` class="${names.join(' ')}"`:''};
+  return `<div class="tw"><table><thead><tr>${cols.map((h,i)=>`<th scope="col"${c(i)}>${h||(act&&i===cols.length-1?'操作':'')}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((v,i)=>`<td${c(i)}>${v}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length}" class="tip">${empty}</td></tr>`}</tbody></table></div>`
+}
+// 筛选：列表页有两个框——名字框搜昵称 / 手机号 / 团队名，编号框搜订单号、任务ID 等；看到什么条件就按什么筛。
+let q={},pq={};
+let otab='订单';   // 订单管理页里的 tab：订单 / 调整记录
+const qk=()=>detail?'D':cur==='订单管理'?cur+':'+otab:cur;   // 搜索词、页码存放位置：列表页按菜单（订单管理再按 tab）
+const S=(arr,keys)=>{const v=(q[qk()]||'').trim();arr=T(arr);return v?arr.filter(x=>keys(x).some(k=>String(k).includes(v))):arr};
+// 记录里的账号列：团队显示「团队名（团队ID）」，同名团队也能分清
+const acctLabel=a=>{if(a==='个人')return '个人';const t=teams.find(t=>teamName(t)===a);return t?`${a}（${t.id}）`:a};
+const P=(arr,uidOf,acctOf)=>{const v=(pq[qk()]||'').trim();if(!v)return arr;
+  return arr.filter(x=>{const u=U(uidOf(x));return [u.nick,u.phone,acctOf(x)].some(f=>f.includes(v))})};
+// 输入框内带删除按钮：有内容才显示，点一下清空
+const ipt=(inner,v,onX)=>`<span class="ipt">${inner}<button class="x" style="display:${v?'block':'none'}" onclick="${onX}">✕</button></span>`;
+const showX=el=>{el.parentNode.querySelector('.x').style.display=el.value?'block':'none'};
+const enter=`onkeydown="if(event.key==='Enter')search()" oninput="showX(this)"`;
+// ---------- 时间范围组件：左边快捷选项，右边自定义起止日期；每个列表各存各的 ----------
+let tr={},drOpen=null;
+const DR_PRESETS=[['today','今天'],['last7','最近 7 天'],['last30','最近 30 天'],['month','本月'],['lastMonth','上月'],['all','全部时间']];
+const ymd=d=>d.toISOString().slice(0,10);
+const dayOff=k=>{const d=new Date(now().slice(0,10));d.setDate(d.getDate()+k);return ymd(d)};
+function drRange(st){const t=now().slice(0,10),y=+t.slice(0,4),m=+t.slice(5,7);
+  switch(st.p){case 'today':return[t,t];case 'last7':return[dayOff(-6),t];case 'last30':return[dayOff(-29),t];
+    case 'month':return[t.slice(0,8)+'01',t];
+    case 'lastMonth':{const a=new Date(Date.UTC(y,m-2,1)),b=new Date(Date.UTC(y,m-1,0));return[ymd(a),ymd(b)]}
+    case 'custom':return[st.from,st.to];default:return null}}
+const drLabel=st=>st.p==='custom'?`${st.from} ~ ${st.to}`:(DR_PRESETS.find(p=>p[0]===st.p)||[0,'全部时间'])[1];
+// 按时间范围过滤：记录用 t，用户用注册时间，团队用开通时间
+// 默认范围：用户、团队列表看全部时间，其他记录类列表默认最近 30 天
+const drState=()=>tr[qk()]||(tr[qk()]={p:cur==='用户管理'||cur==='团队管理'?'all':'last30'});
+const T=arr=>{const st=drState();const r=st&&drRange(st);if(!r)return arr;
+  return arr.filter(x=>{const d=String(x.t||x.reg||x.created||'').slice(0,10);return d>=r[0]&&d<=r[1]})};
+function drBtn(){const k=qk();const st=drState();
+  const panel=drOpen===k?`<div class="dr-pop" onclick="event.stopPropagation()"><div class="dr-presets">${DR_PRESETS.map(([v,l])=>`<button class="${st.p===v?'on':''}" onclick="drPick('${v}')">${l}</button>`).join('')}</div>
+    <div class="dr-custom"><div class="dr-row"><label>开始日期<input type="date" id="drFrom" value="${st.from||''}"></label><span>~</span><label>结束日期<input type="date" id="drTo" value="${st.to||''}"></label></div>
+    <div class="dr-ft"><button onclick="drClose()">取消</button><button class="pri" onclick="drApply()">确定</button></div></div></div>`:'';
+  return `<span class="dr"><button class="dr-btn ${st.p!=='all'?'set':''}" onclick="drToggle(event)">${drLabel(st)} ▾</button>${panel}</span>`}
+function drToggle(e){e.stopPropagation();drOpen=drOpen===qk()?null:qk();render()}
+function drClose(){drOpen=null;render()}
+function drSet(st){tr[qk()]=st;if(pg[qk()])pg[qk()].p=1;drOpen=null;render()}
+function drPick(v){drSet({p:v})}
+function drApply(){const a=$('#drFrom').value,b=$('#drTo').value;
+  if(!a||!b){toast('请选择开始和结束日期');return}if(a>b){toast('开始日期不能晚于结束日期');return}drSet({p:'custom',from:a,to:b})}
+document.addEventListener('click',()=>{if(drOpen){drOpen=null;render()}});
+function bar(ph,extra='',people,recent,right=''){const v=q[qk()]||'',pv=pq[qk()]||'';
+  return `<div class="bar">${people?ipt(`<input id="pbox" placeholder="昵称 / 手机号 / 团队名" value="${pv}" style="width:200px" ${enter}>`,pv,'clearP()'):''}${ipt(`<input id="qbox" placeholder="${ph}" value="${v}" style="width:220px" ${enter}>`,v,'clearQ()')}<button class="search-btn" onclick="search()">搜索</button>${drBtn()}${extra}<span class="sp"></span><button class="admin-only" id="expBtn" onclick="doExport()">导出</button>${right}</div>`}
+function search(){if(pg[qk()])pg[qk()].p=1;q[qk()]=$('#qbox').value.trim();const pb=$('#pbox');if(pb)pq[qk()]=pb.value.trim();render()}
+function clearQ(){if(pg[qk()])pg[qk()].p=1;q[qk()]='';render()}
+function clearP(){if(pg[qk()])pg[qk()].p=1;pq[qk()]='';render()}
+function setOTab(t){otab=t;render()}
+// 页面状态：cur=当前菜单；detail=正在看的用户 / 团队详情页 {t,id,tab}（null=列表）
+// 面包屑父级返回对应列表；点编号一律弹窗查看，不换页面
+let detail=null,hist=[];
+const viewState=()=>({top:$('#page').scrollTop,left:$('#page').scrollLeft,tables:[...document.querySelectorAll('#page .tw')].map(el=>({top:el.scrollTop,left:el.scrollLeft})),selects:[...document.querySelectorAll('#page .bar select')].map(el=>el.value)});
+const restoreView=view=>{if(!view)return;$('#page').scrollTop=view.top;$('#page').scrollLeft=view.left;document.querySelectorAll('#page .tw').forEach((el,i)=>{const pos=view.tables[i];if(pos){el.scrollTop=pos.top;el.scrollLeft=pos.left}});document.querySelectorAll('#page .bar select').forEach((el,i)=>{if(view.selects[i]!==undefined)el.value=view.selects[i]})};
+const snap=()=>({cur,otab,detail:detail&&{...detail},q:{...q},pq:{...pq},pg:JSON.parse(JSON.stringify(pg)),view:viewState()});
+const restore=h=>{cur=h.cur;otab=h.otab;detail=h.detail;q=h.q;pq=h.pq;pg=h.pg};
+function openDetail(t,id){hist.push(snap());detail={t,id,tab:'积分批次'};cur=t==='u'?'用户管理':'团队管理';
+  for(const k in pg)if(k.startsWith('D'))delete pg[k];closeDlg();render();$('#page').scrollTop=0;$('#page').scrollLeft=0}
+const userDetail=id=>openDetail('u',id),teamDetail=id=>openDetail('t',id);
+function openPage(k){cur=k;otab='订单';detail=null;q={};pq={};pg={};hist=[];render()}
+function back(){
+  if(!detail)return;
+  let index=hist.length-1;
+  while(index>=0&&(hist[index].detail||hist[index].cur!==cur))index--;
+  if(index<0){openPage(cur);return}
+  const state=hist[index];hist=hist.slice(0,index);restore(state);render();restoreView(state.view);
+}
+// 点编号：弹窗查看这条记录。弹窗只用来看，里面的编号只显示、不能再点
+const plain=h=>String(h).replace(/<button class="link"[^>]*>([\s\S]*?)<\/button>/g,'$1');
+const kv=pairs=>`<table class="kv">${pairs.map(([k,v])=>`<tr><td class="k">${k}</td><td>${v}</td></tr>`).join('')}</table>`;
+function recDlg(kind,id,byOrder){
+  const R=REC[kind],items=byOrder?R.arr.filter(g=>g.ord===id):R.arr.filter(x=>(x.no||x.id)===id);
+  if(!items.length){toast('找不到该记录');return}
+  // 单条记录竖着显示「字段名　值」；最后一列（操作按钮）放到底部
+  const blocks=items.map(x=>{const cells=R.row(x);return kv(R.cols.map((c,i)=>[c,plain(cells[i])]).filter(([c])=>c))}).join('<div style="height:16px"></div>');
+  const acts=items.length===1&&kind!=='生成记录'&&R.cols[R.cols.length-1]===''?R.row(items[0])[R.cols.length-1].replace('class="link admin-only"','class="admin-only"').replace('<button class="link" disabled>','<button disabled>'):'';
+  openDlg(`<h3>${items[0].kind==='adj'?'积分调整':kind} · ${id}</h3>${blocks}${acts?`<div class="ft">${acts}</div>`:''}`,true);
+}
+const relLink=r=>!r||r==='—'?'—':r[0]==='O'?`<button class="link" onclick="recDlg('订单','${r}')">${r}</button>`:r[0]==='J'?`<button class="link" onclick="recDlg('生成记录','${r}')">任务 ${r}</button>`:r[0]==='G'?`<button class="link" onclick="recDlg('订单','${r}')">调整 ${r}</button>`:r;
+const ops=(...b)=>`<span class="row-actions">${b.join('')}</span>`;
+function setRole(r){role=r;document.body.classList.toggle('ro',r==='ro');if(r==='ro'&&cur==='后台账号'&&!detail)cur='用户管理';render()}
+
+// ---------- 四类记录（列表页和记录弹窗共用同一套列） ----------
+const rec=(src,uidOf,acctOf,ph,extra,keys,cols,row)=>({get arr(){return typeof src==='function'?src():src},cols,row,
+  list(){const items=byTime(S(P(this.arr,uidOf,acctOf),keys));return bar(ph,extra,1,1)+ptable(cols,items.map(row),items.map(idOf))}});
+// 订单的积分过期时间：取这张订单发放的积分批次；未支付的订单还没发积分，显示 —
+const ordExp=o=>{if(o.st!=='已支付')return '—';const {b}=findBatch(o.batch||'');if(b)return b.exp;
+  const d=new Date(o.t.slice(0,10));d.setDate(d.getDate()+(o.type.startsWith('个人订阅')?30:180));return d.toISOString().slice(0,10)};
+// 剩余积分：这一笔积分还剩多少，团队按全团队算（主账号手上 + 已分给成员还没用的）；未支付的订单显示 —
+const remainOf=r=>{if(r.st&&r.st!=='已支付')return '—';const {b}=findBatch(r.batch||'');return b?n(b.left+(b.dist||0)):'—'};
+// 排序：按时间倒序（最新在上）
+const byTime=(arr,f=x=>x.t)=>[...arr].sort((a,b)=>String(f(b)).localeCompare(String(f(a))));
+// 每条记录的唯一标识（订单号 / 调整ID / 任务ID；流水用时间+类型+关联+人）
+const idOf=x=>x.no||x.id||[x.t,x.type,x.rel,x.uid,x.d].join('|');
+const REC={
+  // 订单管理：套餐订单 + 积分调整合成一张表，用「类型」区分；数据仍分开存
+  '订单':rec(()=>[...orders.map(o=>({...o,kind:'order'})),...gifts.map(g=>({...g,no:g.id,kind:'adj',type:g.pts>0?'积分充值':'积分回收'}))],
+    x=>x.uid,x=>x.acct,'订单号 / 调整ID / 合同编号',
+    '<select><option>全部类型</option><option>个人订阅</option><option>通用积分</option><option>团队会员（线下）</option><option>积分充值</option><option>积分回收</option></select><select><option>全部来源</option><option>赠送</option><option>补偿</option><option>内测</option><option>授信</option><option>退款</option><option>其他</option></select><select><option>全部状态</option></select>',x=>[x.no,x.ref||'',x.ord||''],
+    ['编号','手机号','账号','类型','档位','实付','积分','积分过期时间','剩余积分','支付方式','流水号 / 凭证 / 合同编号','状态','来源','原因','关联订单','时间','操作人'],
+    x=>x.kind==='order'
+      ?[x.no,phone(U(x.uid).phone),acctLabel(x.acct),x.type,x.tier,'¥'+n(x.amt),n(x.pts),ordExp(x),remainOf(x),x.pay,x.ref,`<span class="tag ${x.st==='已支付'?'g':'r'}">${x.st}</span>`,'—','—','—',x.t,x.op]
+      :[x.no,phone(U(x.uid).phone),acctLabel(x.acct),x.type,'—','—',(x.pts>0?'+':'')+n(x.pts),x.pts>0?x.exp:'—',x.pts>0?remainOf(x):'—','—','—','<span class="tag g">已完成</span>',x.cat||'其他',x.why||'—',relLink(x.ord),x.t,x.op]),
+  '积分流水':rec(flows,f=>f.uid,f=>f.acct,'任务ID / 订单号 / 调整ID / 批次ID','<select><option>全部类型</option></select>',f=>[f.rel,f.batch],
+    ['时间','账号','持有人手机号','类型','变动','变动后余额','批次ID','关联','操作人'],
+    f=>[f.t,acctLabel(f.acct),phone(U(f.uid).phone),f.type,(f.d>0?'+':'')+n(f.d),n(f.bal),f.batch,relLink(f.rel),f.op]),
+  '生成记录':rec(tasks,j=>j.uid,j=>j.acct,'任务ID / 项目名','<select><option>全部模型</option></select><select><option>全部状态</option></select>',j=>[j.id,j.proj],
+    ['任务ID','手机号','账号','项目','类型','模型','分辨率','时长(参考+出片)','参考图','应扣','实扣','状态','失败原因','厂商退费','提交时间','完成时间'],
+    j=>[j.id,phone(U(j.uid).phone),acctLabel(j.acct),j.proj,j.kind,j.model,j.res,j.dur,j.refs??0,j.pre,j.real,`<span class="tag ${j.st==='成功'?'g':'r'}">${j.st}</span>`,j.why,j.refund,j.t,j.done||'—']),
+};
+
+// ---------- 页面 ----------
+const PAGES={
+  '用户管理':()=>bar('手机号 / 用户ID / 昵称','<select><option>全部会员档位</option></select>')+
+    ptable(['用户ID','手机号','昵称','注册时间','最近登录','会员档位','会员到期','个人积分','加入团队',''],
+      (L=>L.map(u=>[u.id,phone(u.phone),u.nick,u.reg,u.last,u.vip,u.exp,n(u.pts),teams.filter(t=>t.members.some(m=>m[0]===u.id)).length,
+        ops(`<button class="link" onclick="userDetail(${u.id})">详情</button>`,`<button class="link admin-only" onclick="adjDlg(${u.id})">积分调整</button>`)]))(byTime(S(users,u=>[u.id,u.phone,u.nick]),u=>u.reg)),byTime(S(users,u=>[u.id,u.phone,u.nick]),u=>u.reg).map(u=>u.id)),
+  '团队管理':()=>bar('团队ID / 团队名称 / 主账号手机号','',0,0,`<button class="pri admin-only" onclick="createTeam()">创建团队</button>`)+
+    ptable(['团队ID','团队名称','主账号手机号','成员数','团队积分余额','累计实付','开通时间','最近充值',''],
+      (L=>L.map(t=>[t.id,teamName(t),phone(U(t.owner).phone),t.members.length+'/50',n(teamPts(t)),'¥'+n(t.paid),t.created,t.lastPay,
+        ops(`<button class="link" onclick="teamDetail('${t.id}')">详情</button>`,`<button class="link admin-only" onclick="recharge('${t.id}')">充值</button>`,`<button class="link admin-only" onclick="adjDlg(null,'${t.id}')">积分调整</button>`)]))(byTime(S(teams,t=>[t.id,teamName(t),U(t.owner).phone]),t=>t.created)),byTime(S(teams,t=>[t.id,teamName(t),U(t.owner).phone]),t=>t.created).map(t=>t.id)),
+  '订单管理':()=>REC['订单'].list(),
+  '积分流水':()=>REC['积分流水'].list(),
+  '生成记录':()=>REC['生成记录'].list(),
+  '操作日志':()=>bar('操作人 / 对象ID','',0,1)+
+    ptable(['时间','操作人','操作类型','对象','改动前','改动后','原因/备注'],S(logs,l=>[l.op,l.obj]).map(l=>[l.t,l.op,l.type,l.obj,l.before,l.after,l.note]),S(logs,l=>[l.op,l.obj]).map(idOf)),
+  '后台账号':()=>
+    ptable(['手机号','姓名','角色','状态','创建时间','最近登录',''],admins.map((a,i)=>[a.acct,a.name,a.role,`<span class="tag ${a.st==='启用'?'g':'r'}">${a.st}</span>`,a.created,a.last,
+      a.acct===ME?'<span class="tip">当前登录</span>':ops(`<button class="link admin-only" onclick="acctDlg(${i})">权限调整</button>`,`<button class="link admin-only" onclick="toggleAcct(${i})">${a.st==='启用'?'停用':'启用'}</button>`)])),
+};
+// 页面级操作按钮，放在标题行右侧（和标题对齐）
+function headActs(){
+  if(detail){const id=detail.id;
+    if(detail.t==='u'){const u=U(id);return `<button class="admin-only" onclick="adjDlg(${id})">积分调整</button>`}
+    return `<button class="admin-only" onclick="adjDlg(null,'${id}')">积分调整</button><button class="pri admin-only" onclick="recharge('${id}')">充值</button>`}
+  return {'后台账号':`<button class="pri admin-only" onclick="acctDlg()">新增账号</button>`}[cur]||'';
+}
+// 左侧菜单图标：内联 SVG，离线打开也可显示，颜色跟随菜单文字。
+/* Tabler Icons — MIT License
+
+Copyright (c) 2020-2026 Paweł Kuna
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+const NAV_ICONS={
+  '用户管理':'<path d="M12 13a3 3 0 1 0 0 -6a3 3 0 0 0 0 6" /> <path d="M12 3c7.2 0 9 1.8 9 9c0 7.2 -1.8 9 -9 9c-7.2 0 -9 -1.8 -9 -9c0 -7.2 1.8 -9 9 -9" /> <path d="M6 20.05v-.05a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v.05" />',
+  '团队管理':'<circle cx="9" cy="7.5" r="3.5"/><path d="M3 20v-1.5A5.5 5.5 0 0 1 8.5 13h1a5.5 5.5 0 0 1 5.5 5.5V20M16 4.5a3.5 3.5 0 0 1 0 7M17 14a4 4 0 0 1 4 4v2"/>',
+  '订单管理':'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 9h6M9 14h6"/>',
+  '积分流水':'<path d="M9 14c0 1.657 2.686 3 6 3s6 -1.343 6 -3s-2.686 -3 -6 -3s-6 1.343 -6 3" /> <path d="M9 14v4c0 1.656 2.686 3 6 3s6 -1.344 6 -3v-4" /> <path d="M3 6c0 1.072 1.144 2.062 3 2.598s4.144 .536 6 0c1.856 -.536 3 -1.526 3 -2.598c0 -1.072 -1.144 -2.062 -3 -2.598s-4.144 -.536 -6 0c-1.856 .536 -3 1.526 -3 2.598" /> <path d="M3 6v10c0 .888 .772 1.45 2 2" /> <path d="M3 11c0 .888 .772 1.45 2 2" />',
+  '生成记录':'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3Z"/>',
+  '操作日志':'<path d="M12 8l0 4l2 2" /> <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" />',
+  '后台账号':'<path d="M7 12h3v4h-3l0 -4" /> <path d="M10 6h-6a1 1 0 0 0 -1 1v12a1 1 0 0 0 1 1h16a1 1 0 0 0 1 -1v-12a1 1 0 0 0 -1 -1h-6" /> <path d="M10 4a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-2a1 1 0 0 1 -1 -1l0 -3" /> <path d="M14 16h2" /> <path d="M14 12h4" />',
+};
+const navIcon=k=>`<svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${NAV_ICONS[k]||''}</svg>`;
+function render(){
+  $('#nav').innerHTML=Object.keys(PAGES).filter(k=>!(role==='ro'&&k==='后台账号')).map(k=>`<a class="${k===cur?'on':''}" role="button" tabindex="0" title="${k}" ${k===cur?'aria-current="page"':''} onclick="openPage('${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPage('${k}')}">${navIcon(k)}<span>${k}</span></a>`).join('');
+  const title=detail?(detail.t==='u'?'用户详情 · '+U(detail.id).nick:'团队详情 · '+teamName(teams.find(t=>t.id===detail.id))):cur;
+  const detailLabel=detail?(detail.t==='u'?'用户详情':'团队详情'):'';
+  $('#breadcrumbs').innerHTML=`<ol>${detail?`<li><button type="button" class="breadcrumb-link" onclick="back()" title="返回${cur}">${cur}</button></li><li><svg class="breadcrumb-separator" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg><span id="current-page" aria-current="page">${detailLabel}</span></li>`:`<li><span id="current-page" aria-current="page">${cur}</span></li>`}</ol>`;
+  const fill=!detail;$('#page').classList.toggle('fill',fill);
+  $('#page').innerHTML=`<div class="head"><h2>${title}</h2><span class="sp"></span>${headActs()}</div>`+(detail?(detail.t==='u'?userPage(detail.id):teamPage(detail.id)):fill?`<div class="card fillcard">${PAGES[cur]()}</div>`:PAGES[cur]());
+  syncExport();
+}
+
+// ---------- 详情（轻量的基本信息 + 明细页签） ----------
+const detailOverview=({caption,name,identity,metrics,times})=>`<section class="card detail-card" aria-label="基本信息"><div class="overview-main"><div class="overview-identity"><div class="overview-caption">${caption}</div><div class="overview-name">${name}</div>${identity.map(line=>`<div class="overview-meta">${line.map(([label,value])=>`<span><span class="label">${label}</span>${value}</span>`).join('')}</div>`).join('')}</div><dl class="overview-metrics">${metrics.map(([label,value],i)=>`<div class="overview-metric${i===0?' primary':''}"><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl></div><dl class="overview-times">${times.map(([label,value])=>`<div class="overview-time"><dt>${label}</dt><dd>${value}</dd></div>`).join('')}</dl></section>`;
+function detailTabs(items,body,note=''){
+  return `<div class="card detail-panel"><div class="detail-tabs" role="tablist" aria-label="详情明细">${items.map(([name,count])=>`<button id="detail-tab-${name}" role="tab" aria-selected="${detail.tab===name}" aria-controls="detail-content" class="${detail.tab===name?'on':''}" onclick="setDetailTab('${name}')">${name}<span class="tab-count">${count}</span></button>`).join('')}</div><div id="detail-content" role="tabpanel" aria-labelledby="detail-tab-${detail.tab}">${note?`<p class="detail-note">${note}</p>`:''}${body}</div></div>`
+}
+function setDetailTab(tab){detail.tab=tab;render()}
+function userPage(id){
+  const u=U(id),my=teams.filter(t=>t.members.some(m=>m[0]===id)),batches=ub[id]||[];
+  const info=detailOverview({caption:'昵称',name:u.nick,identity:[[['用户ID',u.id],['手机号',phone(u.phone)]]],metrics:[['个人积分',n(u.pts)],['会员档位',u.vip],['会员到期',u.exp]],times:[['注册时间',u.reg],['最近登录',u.last]]});
+  const body=detail.tab==='所在团队'
+    ?table(['团队','角色','所属小组','团队内积分'],my.map(t=>{const m=t.members.find(m=>m[0]===id);return[`${teamName(t)}（${t.id}）`,m[1]==='主账号'?'<span class="tag b">主账号</span>':m[1],m[2],n(m[3])]}),'暂未加入团队')
+    :ptable(['批次ID','来源','初始积分','剩余积分','过期时间'],batches.map(b=>[b.id,b.src,n(b.pts),n(b.left),b.exp]),null,'D:批次');
+  return info+detailTabs([['积分批次',batches.length],['所在团队',my.length]],body);
+}
+function teamPage(id){
+  const t=teams.find(t=>t.id===id),owner=U(t.owner);
+  const info=detailOverview({caption:'团队名称',name:teamName(t),identity:[[['团队ID',t.id]],[['主账号',owner.nick],['手机号',phone(owner.phone)]]],metrics:[['团队积分',n(teamPts(t))],['成员数',t.members.length+'/50'],['累计实付','¥'+n(t.paid)]],times:[['开通时间',t.created],['最近充值',t.lastPay]]});
+  const body=detail.tab==='积分批次'
+    ?ptable(['批次ID','来源','初始积分','剩余（主账号）','预扣中','过期时间'],t.batches.map(b=>[b.id,b.src,n(b.pts),n(b.left),n(b.held||0),b.exp]),null,'D:批次')
+    :ptable(['手机号','昵称','角色','所属小组','积分余额'],t.members.map(m=>[phone(U(m[0]).phone),U(m[0]).nick,m[1]==='主账号'?'<span class="tag b">主账号</span>':m[1],m[2],n(m[3])]),null,'D:成员');
+  return info+detailTabs([['积分批次',t.batches.length],['成员',t.members.length]],body);
+}
+
+// ---------- 积分批次工具 ----------
+const findBatch=id=>{for(const t of teams){const b=t.batches.find(b=>b.id===id);if(b)return{b,t}}for(const k in ub){const b=ub[k].find(b=>b.id===id);if(b)return{b,uid:+k}}return{}};
+const avail=rec=>{const {b}=findBatch(rec.batch);if(!b||b.exp<now().slice(0,10))return 0;return Math.max(0,b.left-(b.held||0))};
+
+// ---------- 创建团队 / 充值 ----------
+let bound=null;
+function payFields(){return `
+  <div class="f"><label>团队档位<span class="req">*</span></label><select id="tier" onchange="fillTier()">${TIERS.map((x,i)=>`<option value="${i}">${x.name} · ¥${n(x.price)} · ${n(x.pts)} 积分</option>`).join('')}</select></div>
+  <div class="f"><label>实付金额（元）<span class="req">*</span></label><input id="amt" value="${TIERS[0].price}"></div>
+  <div class="f"><label>付款凭证 / 合同编号<span class="req">*</span></label><input id="ref" placeholder="对公转账凭证号或合同编号"></div>
+  <div class="f"><label>积分有效期（固定，不可修改）</label><input id="days" value="180 天" disabled></div>
+  <div class="f"><label>备注</label><input id="note" placeholder="选填"></div>`}
+function fillTier(){$('#amt').value=TIERS[$('#tier').value].price}
+function createTeam(){
+  bound=null;
+  openDlg(`<h3>创建团队</h3>
+  <div class="f"><label>主账号手机号<span class="req">*</span></label><div class="row"><input id="ph" placeholder="试试 13800000001 / 13800000002 / 13900000000"><button onclick="findUser()">查找</button></div><div id="phHint" class="hint"></div></div>
+  ${payFields()}
+  <div class="ft"><button onclick="closeDlg()">取消</button><button class="pri" onclick="confirmPay()">下一步</button></div>`);
+}
+function findUser(){
+  const p=$('#ph').value.trim(),u=users.find(u=>u.phone===p),h=$('#phHint');bound=null;
+  if(!u){h.className='hint err';h.textContent='该手机号未注册，请先让用户在平台注册';return}
+  if(teams.some(t=>t.owner===u.id)){h.className='hint err';h.textContent='该用户已有团队，请在团队详情里充值（每个手机号最多 1 个团队）';return}
+  bound=u;h.className='hint ok';h.textContent=`✓ ${u.nick}（用户ID ${u.id}），团队名称将为「${u.nick}的团队」`;
+}
+function readPay(){
+  const tier=TIERS[$('#tier').value],ref=$('#ref').value.trim();
+  if(!ref){toast('请填写付款凭证 / 合同编号');return null}
+  return{tier,ref,amt:+$('#amt').value,days:+$('#days').value||180,note:$('#note').value};
+}
+let pending=null;
+function confirmPay(teamId){
+  if(!teamId&&!bound){toast('请先查找并确认主账号');return}
+  const p=readPay();if(!p)return;pending={...p,teamId};
+  // 记下填写页的原始输入，「← 上一步」时原样填回
+  formVals={teamId,bound,vals:Object.fromEntries(['ph','tier','amt','ref','days','note'].map(k=>[k,$('#'+k)?$('#'+k).value:'']))};
+  const who=teamId?teamName(teams.find(t=>t.id===teamId)):bound.nick+'的团队';
+  openDlg(`<h3>${teamId?'确认充值':'确认创建团队'}</h3>
+  <div class="sum">团队：${who}<br>主账号：${teamId?phone(U(teams.find(t=>t.id===teamId).owner).phone):phone(bound.phone)}<br>
+  档位：${p.tier.name}　实付 ¥${n(p.amt)}<br>套餐积分：<b>${n(p.tier.pts)}</b><br>
+  过期日期：${addDays(p.days)}<br>付款凭证 / 合同编号：${p.ref}</div>
+  <div class="ft"><button onclick="backToForm()">← 上一步</button><span class="sp"></span><button onclick="closeDlg()">取消</button><button class="pri" onclick="doPay()">确认提交</button></div>`);
+}
+let formVals=null;
+function backToForm(){
+  const f=formVals;if(f.teamId)recharge(f.teamId);else createTeam();
+  for(const k in f.vals)if($('#'+k))$('#'+k).value=f.vals[k];
+  if(!f.teamId&&f.bound)findUser();
+}
+function recharge(id){
+  openDlg(`<h3>团队充值 · ${teamName(teams.find(t=>t.id===id))}</h3>${payFields()}
+  <div class="ft"><button onclick="closeDlg()">取消</button><button class="pri" onclick="confirmPay('${id}')">下一步</button></div>`);
+}
+function doPay(){
+  const p=pending,t0=now(),bid='B'+(9000+Math.floor(Math.random()*999)),ono='O'+Date.now(),exp=addDays(p.days);
+  let t;
+  if(p.teamId){t=teams.find(x=>x.id===p.teamId)}
+  else{t={id:'T'+(2001+teams.length),owner:bound.id,members:[[bound.id,'主账号','—',0]],paid:0,created:t0.slice(0,10),lastPay:'',batches:[]};teams.push(t)}
+  t.members[0][3]+=p.tier.pts;t.paid+=p.amt;t.lastPay=t0.slice(0,10);
+  t.batches.push({id:bid,pts:p.tier.pts,left:p.tier.pts,exp,src:'套餐 '+ono});
+  orders.unshift({no:ono,uid:t.owner,acct:teamName(t),type:'团队会员（线下）',tier:p.tier.name,amt:p.amt,pts:p.tier.pts,pay:'线下对公',ref:p.ref,st:'已支付',t:t0,op:'admin-陈',batch:bid,wd:0});
+  flows.unshift({t:t0,acct:teamName(t),uid:t.owner,type:'后台充值',d:p.tier.pts,bal:t.members[0][3],batch:bid,rel:ono,op:'admin-陈'});
+  logs.unshift({t:t0,op:'admin-陈',type:p.teamId?'团队充值':'创建团队',obj:t.id,before:p.teamId?'—':'无团队',after:`${p.tier.name}，${n(p.tier.pts)} 积分，过期 ${exp}`,note:[p.ref,p.note].filter(Boolean).join('；')});
+  closeDlg();render();
+  toast(p.teamId?'充值成功':`团队已创建：用户打开前台账号列表即可切换到「${teamName(t)}」`);
+}
+const ME='13900000001';   // 当前登录的后台账号（手机号）
+function acctDlg(i){
+  const a=i==null?null:admins[i];
+  openDlg(`<h3>${a?`权限调整 · ${a.name}（${a.acct}）`:'新增后台账号'}</h3>
+  ${a?'':`<div class="f"><label>手机号<span class="req">*</span></label><input id="aAcct" placeholder="用这个手机号 + 验证码登录后台"></div><div class="f"><label>姓名<span class="req">*</span></label><input id="aName"></div>`}
+  <div class="f"><label>角色<span class="req">*</span></label><select id="aRole"><option ${a&&a.role==='只读人员'?'selected':''}>只读人员</option><option ${a&&a.role==='管理员'?'selected':''}>管理员</option></select></div>
+  <div class="ft"><button onclick="closeDlg()">取消</button><button class="pri" onclick="saveAcct(${i==null?'null':i})">保存</button></div>`);
+}
+function saveAcct(i){
+  const r=$('#aRole').value,t0=now();
+  if(i==null){
+    const acct=$('#aAcct').value.trim(),name=$('#aName').value.trim();
+    if(!/^1\d{10}$/.test(acct)){toast('请填写 11 位手机号');return}
+    if(!name){toast('请填写姓名');return}
+    if(admins.some(a=>a.acct===acct)){toast('该手机号已是后台账号');return}
+    admins.push({acct,name,role:r,st:'启用',created:t0.slice(0,10),last:'—'});
+    logs.unshift({t:t0,op:ME,type:'新增后台账号',obj:acct,before:'—',after:r,note:''});
+  }else{
+    const a=admins[i];if(a.role===r){closeDlg();return}
+    logs.unshift({t:t0,op:ME,type:'权限调整',obj:a.acct,before:a.role,after:r,note:''});a.role=r;
+  }
+  closeDlg();render();toast('已保存');
+}
+function toggleAcct(i){
+  const a=admins[i],before=a.st;a.st=before==='启用'?'停用':'启用';
+  logs.unshift({t:now(),op:ME,type:a.st==='停用'?'停用后台账号':'启用后台账号',obj:a.acct,before,after:a.st,note:''});
+  render();toast(a.st==='停用'?'已停用，该账号不能再登录后台':'已启用');
+}
+// ---------- 积分调整：正数增加（生成一个新批次）、负数扣减（按过期时间从早到晚扣，最多扣到当前可用） ----------
+let adjTo=null;
+const adjDays=()=>adjTo.teamId?180:30;   // 积分充值的有效期固定：个人 30 天、团队 180 天
+const today=()=>now().slice(0,10);
+// 可扣减的批次：个人账号的批次，或团队主账号手上的批次；不含已过期、不含预扣中
+const adjBatches=()=>{const t=adjTo.teamId?teams.find(x=>x.id===adjTo.teamId):null;
+  return (t?t.batches:(ub[adjTo.uid]||[])).filter(b=>b.exp>=today()&&b.left-(b.held||0)>0).sort((a,b)=>a.exp.localeCompare(b.exp))};
+const adjAvail=()=>adjBatches().reduce((a,b)=>a+b.left-(b.held||0),0);
+function adjDlg(uid,teamId){
+  adjTo={uid,teamId};
+  const t=teamId?teams.find(x=>x.id===teamId):null,u=t?U(t.owner):U(uid);
+  const who=t?`${teamName(t)}（${t.id}）　主账号 ${u.nick}　${phone(u.phone)}`:`${u.nick}　${phone(u.phone)}（个人账号）`;
+  openDlg(`<h3>积分调整</h3>
+  <div class="sum">账号：${who}<br>当前可用：<b>${n(adjAvail())}</b>（不含预扣中）</div>
+  <div class="f" style="margin-top:12px"><label>类型<span class="req">*</span></label>
+    <div class="radios"><label><input type="radio" name="aType" value="充值" checked onchange="adjType()">积分充值</label><label><input type="radio" name="aType" value="回收" onchange="adjType()">积分回收</label></div></div>
+  <div class="f"><label id="aPtsLbl"></label><input id="aPts" placeholder="填正整数"></div>
+  <div class="f"><label>来源<span class="req">*</span></label><select id="aCat" onchange="adjCat()"></select></div>
+  <div class="f"><label id="aWhyLbl">原因（选填）</label><input id="aWhy" placeholder="补充说明，如合同号、工单号"></div>
+  <div class="f"><label>关联订单号（选填）</label><input id="aOrd"></div>
+  <div class="ft"><button onclick="closeDlg()">取消</button><button class="pri" onclick="doAdj()">确认</button></div>`);
+  adjType();
+}
+// 选「积分回收」时不显示有效期
+const ADJ_CATS={充值:['赠送','补偿','内测','授信','其他'],回收:['退款','其他']};
+function adjType(){const typ=$('input[name=aType]:checked').value;$('#aPtsLbl').innerHTML=(typ==='回收'?'积分':`积分（有效期 ${adjDays()} 天）`)+'<span class="req">*</span>';
+  $('#aCat').innerHTML='<option value="">请选择</option>'+ADJ_CATS[typ].map(c=>`<option>${c}</option>`).join('');adjCat()}
+// 来源选「其他」时原因必填
+function adjCat(){$('#aWhyLbl').innerHTML=$('#aCat').value==='其他'?'原因<span class="req">*</span>':'原因（选填）'}
+function doAdj(){
+  const typ=$('input[name=aType]:checked').value,raw=$('#aPts').value.trim(),v=(typ==='回收'?-1:1)*(+raw),why=$('#aWhy').value.trim(),ordNo=$('#aOrd').value.trim();
+  if(!/^\d+$/.test(raw)||+raw===0){toast('积分要填正整数');return}
+  const cat=$('#aCat').value;
+  if(!cat){toast('请选择来源');return}
+  if(cat==='其他'&&!why){toast('来源选「其他」时请填写原因');return}
+  const t=adjTo.teamId?teams.find(x=>x.id===adjTo.teamId):null,uid=t?t.owner:adjTo.uid,acct=t?teamName(t):'个人';
+  if(ordNo){const o=orders.find(o=>o.no===ordNo);
+    if(!o){toast('找不到该订单号');return}
+    if(o.acct!==acct||o.uid!==uid){toast('该订单不属于这个账号');return}}
+  const y=adjAvail();
+  if(v<0&&-v>y){toast(`回收超过当前可用（${n(y)}）`);return}
+  const t0=now(),gid='G'+(3001+gifts.length+Math.floor(Math.random()*900));let bid,exp='—';
+  if(v>0){bid='B'+(9000+Math.floor(Math.random()*999));exp=addDays(t?180:30);
+    const b={id:bid,pts:v,left:v,exp,src:'调整 '+gid};
+    if(t){t.members[0][3]+=v;t.batches.push(b)}else{U(uid).pts+=v;(ub[uid]=ub[uid]||[]).push(b)}}
+  else{let need=-v;const used=[];
+    for(const b of adjBatches()){if(!need)break;const k=Math.min(need,b.left-(b.held||0));b.left-=k;need-=k;used.push(b.id)}
+    bid=used.join(',');if(t)t.members[0][3]+=v;else U(uid).pts+=v}
+  gifts.unshift({id:gid,t:t0,acct,uid,pts:v,exp,cat,why,ord:ordNo,op:'admin-陈',batch:v>0?bid:'',wd:0});
+  flows.unshift({t:t0,acct,uid,type:'积分调整',d:v,bal:t?t.members[0][3]:U(uid).pts,batch:bid,rel:gid,op:'admin-陈'});
+  logs.unshift({t:t0,op:'admin-陈',type:'积分调整',obj:t?t.id:uid,before:'—',after:`${acct} ${v>0?'+':''}${n(v)} 积分${v>0?'，过期 '+exp:''}`,note:[cat,why].filter(Boolean).join('：')});
+  closeDlg();render();toast(`${v>0?'积分充值':'积分回收'}成功：${v>0?'+':''}${n(v)}`);
+}
+$('#mask').onclick=e=>{if(e.target.id==='mask')closeDlg()};
+render();
+</script>
+</body>
