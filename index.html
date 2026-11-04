@@ -245,8 +245,9 @@ td.sub-id{padding-left:34px}
     <div class="header-context"><nav id="breadcrumbs" class="breadcrumbs" aria-label="面包屑"><ol><li><span id="current-page" aria-current="page">用户管理</span></li></ol></nav><span class="demo-badge" title="当前页面使用示例数据">演示环境</span></div>
     <span class="role-control">演示身份
       <select id="role" onchange="setRole(this.value)">
-        <option value="admin">管理员</option>
-        <option value="ro">只读人员</option>
+        <option value="manage">超级管理员</option>
+        <option value="edit">管理员</option>
+        <option value="view">访客</option>
       </select>
     </span>
   </header>
@@ -296,7 +297,7 @@ const flows=[
   {t:'2026-11-01 11:02',acct:'个人',uid:10001,type:'生成预扣',d:-62,bal:5058,batch:'B8001',rel:'J88190',op:'—'},
   {t:'2026-10-21 09:10',acct:'崧果-王总的团队',uid:10003,type:'团队分配',d:10000,bal:10000,batch:'B9001',rel:'—',op:'崧果-王总'},
   {t:'2026-10-20 15:03',acct:'崧果-王总的团队',uid:10002,type:'积分调整',d:50000,bal:1370000,batch:'B9002',rel:'G3001',op:'admin-陈'},
-  {t:'2026-10-20 15:02',acct:'崧果-王总的团队',uid:10002,type:'后台充值',d:1320000,bal:1320000,batch:'B9001',rel:'O20261020001',op:'admin-陈'},
+  {t:'2026-10-20 15:02',acct:'崧果-王总的团队',uid:10002,type:'套餐充值',d:1320000,bal:1320000,batch:'B9001',rel:'O20261020001',op:'admin-陈'},
 ];
 const tasks=[
   {id:'J88213',uid:10004,acct:'崧果-王总的团队',proj:'重生之嫡女 第3集',kind:'视频',model:'Seedance 2.0',res:'720P',dur:'0+10s',pre:150,real:130,st:'成功',why:'—',refund:'—',t:'2026-11-01 14:18',done:'2026-11-01 14:20'},
@@ -337,12 +338,14 @@ const logs=[
   {t:'2026-10-20 15:02',op:'admin-陈',type:'创建团队',obj:'T2001',before:'—',after:'主账号 13800000002，尊享，1,320,000 积分',note:'合同 HT-2026-018'},
 ];
 const admins=[
-  {acct:'13900000001',name:'陈',role:'管理员',st:'启用',created:'2026-10-15',last:'2026-11-02'},
-  {acct:'13900000002',name:'李',role:'只读人员',st:'启用',created:'2026-10-15',last:'2026-11-01'},
+  {acct:'13900000001',name:'陈',role:'超级管理员',st:'启用',created:'2026-10-15',last:'2026-11-02'},
+  {acct:'13900000002',name:'李',role:'访客',st:'启用',created:'2026-10-15',last:'2026-11-01'},
+  {acct:'13900000003',name:'王',role:'管理员',st:'启用',created:'2026-10-20',last:'2026-11-03'},
 ];
 
 // ---------- 工具 ----------
-let role='admin',cur='用户管理';
+// 后台角色三档：view 访客（只看）/ edit 管理员（业务操作 + 导出）/ manage 超级管理员（再加后台账号管理）
+let role='manage',cur='用户管理';
 const $=s=>document.querySelector(s);
 const U=id=>users.find(u=>u.id===id);
 const phone=p=>p;
@@ -373,7 +376,7 @@ function ptable(cols,rows,ids,k=qk()){const st=pg[k]||(pg[k]={p:1,size:20}),tota
   const from=(st.p-1)*st.size,nums=[];
   const sk=[k,st.p,st.size,q[k]||'',pq[k]||''].join('#');if(sk!==selFor){sel.clear();selFor=sk}
   if(ids){expTotal=total;
-    if(role==='admin'){pageIds=ids.slice(from,from+st.size);const all=pageIds.length&&pageIds.every(i=>sel.has(String(i)));
+    if(role!=='view'){pageIds=ids.slice(from,from+st.size);const all=pageIds.length&&pageIds.every(i=>sel.has(String(i)));
       cols=[`<input type="checkbox" title="全选本页" ${all?'checked':''} onclick="selAll(this.checked)">`,...cols];
       rows=rows.map((r,i)=>[`<input type="checkbox" ${sel.has(String(ids[i]))?'checked':''} onclick="toggleSel('${ids[i]}')">`,...r])}}
   for(let i=1;i<=pages;i++)if(i===1||i===pages||Math.abs(i-st.p)<=2)nums.push(i);else if(nums[nums.length-1]!=='…')nums.push('…');
@@ -488,7 +491,7 @@ const stTag=s=>`<span class="tag ${/成功$/.test(s)&&!/部分/.test(s)?'g':'r'}
 const failFirst=cs=>[...cs];
 function toggleExp(id){expd.has(id)?expd.delete(id):expd.add(id);render()}
 // 子任务行：直接插在主任务行下面，默认折叠；最多显示 10 条（按 1-N 顺序），更多的进「查看全部」弹窗
-function subRows(j){if(!j.batch||!expd.has(j.id))return '';const lead=role==='admin'?'<td></td>':'',cs=failFirst(j.children),show=cs.slice(0,10);
+function subRows(j){if(!j.batch||!expd.has(j.id))return '';const lead=role!=='view'?'<td></td>':'',cs=failFirst(j.children),show=cs.slice(0,10);
   return show.map(c=>`<tr class="sub">${lead}<td class="sub-id">${c.id}</td><td></td><td></td><td></td><td></td><td></td><td></td><td>1 ${unit(j)}</td><td>${j.kind==='视频'?durTxt(c.ref,c.out):'—'}</td><td>${c.pre}</td><td>${c.real}</td><td>${stTag(c.st)}</td><td>${c.st==='成功'?'—':'是'}</td><td>${j.t}</td><td>${j.done}</td></tr>`).join('')
     +(cs.length>10?`<tr class="sub">${lead}<td colspan="15" class="sub-id"><button class="link" onclick="subDlg('${j.id}')">查看全部 ${cs.length} 条 →</button></td></tr>`:'');}
 // 「查看全部」弹窗：按状态筛选、搜子任务号、分页
@@ -515,7 +518,7 @@ function recDlg(kind,id,byOrder){
 }
 const relLink=r=>!r||r==='—'?'—':r[0]==='O'?`<button class="link" onclick="recDlg('订单','${r}')">${r}</button>`:r[0]==='J'?`<button class="link" onclick="recDlg('生成记录','${r}')">任务 ${r}</button>`:r[0]==='A'?`<button class="link" onclick="subDlg('${r}')">任务 ${r}</button>`:r[0]==='G'?`<button class="link" onclick="recDlg('订单','${r}')">调整 ${r}</button>`:r;
 const ops=(...b)=>`<span class="row-actions">${b.join('')}</span>`;
-function setRole(r){role=r;document.body.classList.toggle('ro',r==='ro');if(r==='ro'&&cur==='后台账号'&&!detail)cur='用户管理';render()}
+function setRole(r){role=r;document.body.classList.toggle('ro',r==='view');if(r!=='manage'&&cur==='后台账号'&&!detail)cur='用户管理';render()}
 
 // ---------- 四类记录（列表页和记录弹窗共用同一套列） ----------
 const rec=(src,uidOf,acctOf,ph,extra,keys,cols,row)=>({get arr(){return typeof src==='function'?src():src},cols,row,
@@ -559,7 +562,7 @@ const PAGES={
   '团队管理':()=>bar('团队ID / 团队名称 / 主账号手机号','',0,0,`<button class="pri admin-only" onclick="createTeam()">创建团队</button>`)+
     ptable(['团队ID','团队名称','主账号手机号','成员数','团队积分余额','累计实付','开通时间','最近充值',''],
       (L=>L.map(t=>[t.id,teamName(t),phone(U(t.owner).phone),t.members.length+'/50',n(teamPts(t)),'¥'+n(t.paid),t.created,t.lastPay,
-        ops(`<button class="link" onclick="teamDetail('${t.id}')">详情</button>`,`<button class="link admin-only" onclick="recharge('${t.id}')">充值</button>`,`<button class="link admin-only" onclick="adjDlg(null,'${t.id}')">积分调整</button>`)]))(byTime(S(teams,t=>[t.id,teamName(t),U(t.owner).phone]),t=>t.created)),byTime(S(teams,t=>[t.id,teamName(t),U(t.owner).phone]),t=>t.created).map(t=>t.id)),
+        ops(`<button class="link" onclick="teamDetail('${t.id}')">详情</button>`,`<button class="link admin-only" onclick="recharge('${t.id}')">套餐充值</button>`,`<button class="link admin-only" onclick="adjDlg(null,'${t.id}')">积分调整</button>`)]))(byTime(S(teams,t=>[t.id,teamName(t),U(t.owner).phone]),t=>t.created)),byTime(S(teams,t=>[t.id,teamName(t),U(t.owner).phone]),t=>t.created).map(t=>t.id)),
   '订单管理':()=>REC['订单'].list(),
   '积分流水':()=>REC['积分流水'].list(),
   '生成记录':()=>REC['生成记录'].list(),
@@ -573,7 +576,7 @@ const PAGES={
 function headActs(){
   if(detail){const id=detail.id;
     if(detail.t==='u'){const u=U(id);return `<button class="admin-only" onclick="adjDlg(${id})">积分调整</button>`}
-    return `<button class="admin-only" onclick="adjDlg(null,'${id}')">积分调整</button><button class="pri admin-only" onclick="recharge('${id}')">充值</button>`}
+    return `<button class="admin-only" onclick="adjDlg(null,'${id}')">积分调整</button><button class="pri admin-only" onclick="recharge('${id}')">套餐充值</button>`}
   return {'后台账号':`<button class="pri admin-only" onclick="acctDlg()">新增账号</button>`}[cur]||'';
 }
 // 左侧菜单图标：内联 SVG，离线打开也可显示，颜色跟随菜单文字。
@@ -610,7 +613,7 @@ const NAV_ICONS={
 };
 const navIcon=k=>`<svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${NAV_ICONS[k]||''}</svg>`;
 function render(){
-  $('#nav').innerHTML=Object.keys(PAGES).filter(k=>!(role==='ro'&&k==='后台账号')).map(k=>`<a class="${k===cur?'on':''}" role="button" tabindex="0" title="${k}" ${k===cur?'aria-current="page"':''} onclick="openPage('${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPage('${k}')}">${navIcon(k)}<span>${k}</span></a>`).join('');
+  $('#nav').innerHTML=Object.keys(PAGES).filter(k=>!(role!=='manage'&&k==='后台账号')).map(k=>`<a class="${k===cur?'on':''}" role="button" tabindex="0" title="${k}" ${k===cur?'aria-current="page"':''} onclick="openPage('${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openPage('${k}')}">${navIcon(k)}<span>${k}</span></a>`).join('');
   const title=detail?(detail.t==='u'?'用户详情 · '+U(detail.id).nick:'团队详情 · '+teamName(teams.find(t=>t.id===detail.id))):cur;
   const detailLabel=detail?(detail.t==='u'?'用户详情':'团队详情'):'';
   $('#breadcrumbs').innerHTML=`<ol>${detail?`<li><button type="button" class="breadcrumb-link" onclick="back()" title="返回${cur}">${cur}</button></li><li><svg class="breadcrumb-separator" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg><span id="current-page" aria-current="page">${detailLabel}</span></li>`:`<li><span id="current-page" aria-current="page">${cur}</span></li>`}</ol>`;
@@ -693,7 +696,7 @@ function backToForm(){
   if(!f.teamId&&f.bound)findUser();
 }
 function recharge(id){
-  openDlg(`<h3>团队充值 · ${teamName(teams.find(t=>t.id===id))}</h3>${payFields()}
+  openDlg(`<h3>套餐充值 · ${teamName(teams.find(t=>t.id===id))}</h3>${payFields()}
   <div class="ft"><button onclick="closeDlg()">取消</button><button class="pri" onclick="confirmPay('${id}')">下一步</button></div>`);
 }
 function doPay(){
@@ -704,17 +707,17 @@ function doPay(){
   t.members[0][3]+=p.tier.pts;t.paid+=p.amt;t.lastPay=t0.slice(0,10);
   t.batches.push({id:bid,pts:p.tier.pts,left:p.tier.pts,exp,src:'套餐 '+ono});
   orders.unshift({no:ono,uid:t.owner,acct:teamName(t),type:'团队会员（线下）',tier:p.tier.name,amt:p.amt,pts:p.tier.pts,pay:'线下对公',ref:p.ref,st:'已支付',t:t0,op:'admin-陈',batch:bid,wd:0});
-  flows.unshift({t:t0,acct:teamName(t),uid:t.owner,type:'后台充值',d:p.tier.pts,bal:t.members[0][3],batch:bid,rel:ono,op:'admin-陈'});
-  logs.unshift({t:t0,op:'admin-陈',type:p.teamId?'团队充值':'创建团队',obj:t.id,before:p.teamId?'—':'无团队',after:`${p.tier.name}，${n(p.tier.pts)} 积分，过期 ${exp}`,note:[p.ref,p.note].filter(Boolean).join('；')});
+  flows.unshift({t:t0,acct:teamName(t),uid:t.owner,type:'套餐充值',d:p.tier.pts,bal:t.members[0][3],batch:bid,rel:ono,op:'admin-陈'});
+  logs.unshift({t:t0,op:'admin-陈',type:p.teamId?'套餐充值':'创建团队',obj:t.id,before:p.teamId?'—':'无团队',after:`${p.tier.name}，${n(p.tier.pts)} 积分，过期 ${exp}`,note:[p.ref,p.note].filter(Boolean).join('；')});
   closeDlg();render();
-  toast(p.teamId?'充值成功':`团队已创建：用户打开前台账号列表即可切换到「${teamName(t)}」`);
+  toast(p.teamId?'套餐充值成功':`团队已创建：用户打开前台账号列表即可切换到「${teamName(t)}」`);
 }
 const ME='13900000001';   // 当前登录的后台账号（手机号）
 function acctDlg(i){
   const a=i==null?null:admins[i];
   openDlg(`<h3>${a?`权限调整 · ${a.name}（${a.acct}）`:'新增后台账号'}</h3>
   ${a?'':`<div class="f"><label>手机号<span class="req">*</span></label><input id="aAcct" placeholder="用这个手机号 + 验证码登录后台"></div><div class="f"><label>姓名<span class="req">*</span></label><input id="aName"></div>`}
-  <div class="f"><label>角色<span class="req">*</span></label><select id="aRole"><option ${a&&a.role==='只读人员'?'selected':''}>只读人员</option><option ${a&&a.role==='管理员'?'selected':''}>管理员</option></select></div>
+  <div class="f"><label>角色<span class="req">*</span></label><select id="aRole">${['访客','管理员','超级管理员'].map(x=>`<option ${a&&a.role===x?'selected':''}>${x}</option>`).join('')}</select></div>
   <div class="ft"><button onclick="closeDlg()">取消</button><button class="pri" onclick="saveAcct(${i==null?'null':i})">保存</button></div>`);
 }
 function saveAcct(i){
