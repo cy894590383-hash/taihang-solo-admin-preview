@@ -205,6 +205,16 @@ aside *{scrollbar-color:#3f4b5f transparent}
 .dr-row label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:#6b7280}
 .dr-row input{padding:6px 8px;border:1px solid #d1d5db;border-radius:4px}
 .dr-ft{display:flex;justify-content:flex-end;gap:8px}
+.exp{width:20px;display:inline-block;text-align:center;margin-right:4px;font-size:14px;line-height:1}
+.exp-sp{display:inline-block;width:20px}
+tr.sub td{background:#fafbfc;color:#4b5563;font-size:13px}
+td.sub-id{padding-left:34px}
+.exp svg{width:16px;height:16px;vertical-align:-3px;transition:transform .15s}
+.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 28px;background:#f8fafc;border:1px solid #eef1f5;border-radius:8px;padding:14px 18px}
+.ig-k{font-size:12px;color:#6b7280;margin-bottom:2px}
+.ig-v{font-size:14px;color:#111827;word-break:break-all}
+.st-link{padding:0;border:none;background:none;cursor:pointer}
+.st-link .tag{text-decoration:underline;text-underline-offset:2px}
 </style>
 </head>
 <body>
@@ -263,7 +273,7 @@ const users=[
 const teams=[
   {id:'T2001',owner:10002,members:[[10002,'主账号','—',41200],[10003,'组长','小周的小组',8000],[10004,'普通用户','小周的小组',2600]],
    paid:99999,created:'2026-10-20',lastPay:'2026-10-20',
-   batches:[{id:'B9001',pts:1320000,left:1800,dist:10600,exp:'2027-04-18',src:'套餐 O20261020001'},{id:'B9002',pts:50000,left:50000,held:2000,exp:'2027-04-18',src:'调整 G3001'}]},
+   batches:[{id:'B9001',pts:1320000,left:0,dist:10600,exp:'2027-04-18',src:'套餐 O20261020001'},{id:'B9002',pts:50000,left:41200,held:2000,exp:'2027-04-18',src:'调整 G3001'}]},
 ];
 const orders=[
   {no:'O20260925003',uid:10001,acct:'个人',type:'通用积分',tier:'—',amt:30,pts:300,pay:'支付宝',ref:'2026092522001…',st:'已支付',t:'2026-09-25 20:11',op:'—',batch:'B7001',wd:0},
@@ -301,6 +311,21 @@ const gifts=[
 for(let i=1;i<=45;i++){const id='J87'+String(100+i),day=String(1+(i%28)).padStart(2,'0'),t=`2026-10-${day} ${String(9+i%10).padStart(2,'0')}:00`,cost=40+(i%5)*20;
   tasks.push({id,uid:10004,acct:'崧果-王总的团队',proj:'重生之嫡女 第'+(1+i%3)+'集',kind:i%4?'视频':'图片',model:i%4?'Seedance 2.0':'Seedream 5.0',res:'720P',dur:i%4?'0+5s':'—',pre:cost,real:cost,st:'成功',why:'—',refund:'—',t,done:t});
   flows.push({t,acct:'崧果-王总的团队',uid:10004,type:'生成预扣',d:-cost,bal:2600+i*10,batch:'B9001',rel:id,op:'—'},{t,acct:'崧果-王总的团队',uid:10004,type:'生成结算',d:0,bal:2600+i*10,batch:'B9001',rel:id,op:'—'})}
+// 批量生成：一个主任务（A 开头）下挂多个子任务（A-1、A-2…），每个子任务有自己的时长、扣费、状态；数据按子任务记
+(function(){
+  const mk=(id,uid,acct,proj,kind,model,res,t,list)=>{const children=list.map((c,i)=>({id:`${id}-${i+1}`,...c}));
+    tasks.push({id,uid,acct,proj,kind,model,res,t,done:t,batch:true,children});
+    // 变动后余额 = 持有人在这个账号下的余额（团队里就是这个成员手上的团队积分），按时间倒推
+    let bal=acct==='个人'?users.find(u=>u.id===uid).pts:((teams[0].members.find(m=>m[0]===uid)||[0,0,0,0])[3]);
+    const fs=[];children.forEach(c=>{fs.push({type:'生成预扣',d:-c.pre});fs.push({type:c.st==='成功'?'生成结算':'失败释放',d:c.pre-c.real})});
+    for(let i=fs.length-1;i>=0;i--){fs[i].bal=bal;bal-=fs[i].d}
+    fs.forEach(f=>flows.push({t,acct,uid,type:f.type,d:f.d,bal:f.bal,batch:acct==='个人'?'B8001':'B9001',rel:id,op:'—'}))};
+  mk('A10021',10004,'崧果-王总的团队','重生之嫡女 第4集','视频','Seedance 2.0','720P','2026-11-02 16:20',[
+    {ref:0,out:5,pre:65,real:65,st:'成功',why:'—'},{ref:5,out:5,pre:130,real:130,st:'成功',why:'—'},{ref:0,out:10,pre:130,real:0,st:'失败',why:'审核拦截'}]);
+  mk('A10022',10001,'个人','黑猫当铺 EP2','图片','Seedream 5.0','2K','2026-11-02 10:05',[0,1,2,3].map(()=>({pre:30,real:30,st:'成功',why:'—'})));
+  mk('A10023',10003,'崧果-王总的团队','重生之嫡女 第5集','图片','Seedream 5.0','2K','2026-11-01 20:40',
+    Array.from({length:25},(_,i)=>[6,13,21].includes(i)?{pre:30,real:0,st:'失败',why:i===13?'超时':'审核拦截'}:{pre:30,real:30,st:'成功',why:'—'}));
+})();
 // 个人积分批次（团队的批次在 teams[].batches）
 const ub={
   10001:[{id:'B8001',pts:7750,left:5120,exp:'2026-11-18',src:'订阅 O20261018007'},{id:'B8002',pts:4000,left:2500,exp:'2026-11-30',src:'调整 G3000'},{id:'B7001',pts:300,left:0,exp:'2027-03-24',src:'通用积分 O20260925003'}],
@@ -371,7 +396,7 @@ function doExport(){const k=sel.size||expTotal;if(k>10000){toast('导出条数�
   toast(`已导出 ${k} 条（Excel）`);sel.clear();render()}
 function setSize(z,k=qk()){pg[k]={p:1,size:z};render()}
 // 表格：外面包一层，列多时在卡片内左右滚动；最后一列是操作列（表头为空）时固定在最右侧
-const NUM_COLS=new Set(['调整积分','实付','积分','变动','变动后余额','应扣','实扣','参考图','个人积分','加入团队','团队积分余额','累计实付','团队内积分','积分余额','初始积分','剩余积分','数量','剩余','剩余（主账号）','预扣中']);
+const NUM_COLS=new Set(['数量','调整积分','实付','积分','变动','变动后余额','应扣','实扣','参考图','个人积分','加入团队','团队积分余额','累计实付','团队内积分','积分余额','初始积分','剩余积分','数量','剩余','剩余（主账号）','其中主账号','预扣中']);
 function table(cols,rows,empty='暂无数据'){
   const act=cols[cols.length-1]==='',c=i=>{const names=[act&&i===cols.length-1?'act':'',NUM_COLS.has(cols[i])?'num':''].filter(Boolean);return names.length?` class="${names.join(' ')}"`:''};
   return `<div class="tw"><table><thead><tr>${cols.map((h,i)=>`<th scope="col"${c(i)}>${h||(act&&i===cols.length-1?'操作':'')}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((v,i)=>`<td${c(i)}>${v}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${cols.length}" class="tip">${empty}</td></tr>`}</tbody></table></div>`
@@ -444,15 +469,51 @@ function back(){
 // 点编号：弹窗查看这条记录。弹窗只用来看，里面的编号只显示、不能再点
 const plain=h=>String(h).replace(/<button class="link"[^>]*>([\s\S]*?)<\/button>/g,'$1');
 const kv=pairs=>`<table class="kv">${pairs.map(([k,v])=>`<tr><td class="k">${k}</td><td>${v}</td></tr>`).join('')}</table>`;
+// 记录弹窗统一样式：灰底信息块，字段两列排开（单条记录、批量主任务都用它）
+// 只属于订单或积分调整其中一类的字段：没有值就不在弹窗里显示
+const ONLY_SOME=new Set(['档位','实付','支付方式','流水号 / 凭证 / 合同编号','来源','原因','关联订单']);
+const infoGrid=pairs=>`<div class="info-grid">${pairs.filter(([k])=>k).map(([k,v])=>`<div><div class="ig-k">${k}</div><div class="ig-v">${v===''||v==null?'—':v}</div></div>`).join('')}</div>`;
+// ---------- 生成记录：批量任务可展开 ----------
+let expd=new Set();
+const unit=j=>j.kind==='视频'?'个':'张';
+// 时长只记出片：单条 / 子任务写「Xs」，批量主任务写合计「Xs」（旁边数量列已说明是几个）
+const durTxt=(ref,out)=>out==null?'—':`${out}s`;   // 只记出片时长，不记参考时长
+const parseDur=j=>{if(j.out!=null)return[j.ref||0,j.out];const m=/^(\d+)\+(\d+)s$/.exec(j.dur||'');return m?[+m[1],+m[2]]:[0,null]};
+const jobDur=j=>{if(!j.batch){const[r,o]=parseDur(j);return durTxt(r,o)}if(j.kind!=='视频')return '—';
+  return `${j.children.reduce((a,c)=>a+c.out,0)}s`};
+const jobSum=(j,k)=>j.batch?j.children.reduce((a,c)=>a+c[k],0):j[k];
+const jobSt=j=>{if(!j.batch)return j.st;const ok=j.children.filter(c=>c.st==='成功').length,n=j.children.length;return ok===n?'成功':ok===0?'失败':'部分失败'};
+const stTag=s=>`<span class="tag ${/成功$/.test(s)&&!/部分/.test(s)?'g':'r'}">${s}</span>`;
+// 子任务按编号顺序 1-N 排列
+const failFirst=cs=>[...cs];
+function toggleExp(id){expd.has(id)?expd.delete(id):expd.add(id);render()}
+// 子任务行：直接插在主任务行下面，默认折叠；最多显示 10 条（按 1-N 顺序），更多的进「查看全部」弹窗
+function subRows(j){if(!j.batch||!expd.has(j.id))return '';const lead=role==='admin'?'<td></td>':'',cs=failFirst(j.children),show=cs.slice(0,10);
+  return show.map(c=>`<tr class="sub">${lead}<td class="sub-id">${c.id}</td><td></td><td></td><td></td><td></td><td></td><td></td><td>1 ${unit(j)}</td><td>${j.kind==='视频'?durTxt(c.ref,c.out):'—'}</td><td>${c.pre}</td><td>${c.real}</td><td>${stTag(c.st)}</td><td>${c.st==='成功'?'—':'是'}</td><td>${j.t}</td><td>${j.done}</td></tr>`).join('')
+    +(cs.length>10?`<tr class="sub">${lead}<td colspan="15" class="sub-id"><button class="link" onclick="subDlg('${j.id}')">查看全部 ${cs.length} 条 →</button></td></tr>`:'');}
+// 「查看全部」弹窗：按状态筛选、搜子任务号、分页
+let subSt={};
+function subDlg(id,f,p,kw){const j=tasks.find(t=>t.id===id);const st=subSt[id]=subSt[id]||{f:'全部',p:1,kw:''};if(f!=null)st.f=f;if(p!=null)st.p=p;if(kw!=null)st.kw=kw;
+  const all=failFirst(j.children),fail=all.filter(c=>c.st!=='成功');
+  let L=st.f==='失败'?fail:st.f==='成功'?all.filter(c=>c.st==='成功'):all;if(st.kw)L=L.filter(c=>c.id.includes(st.kw));
+  const pages=Math.max(1,Math.ceil(L.length/20));if(st.p>pages)st.p=pages;const pg=L.slice((st.p-1)*20,st.p*20);
+  openDlg(`<h3>${j.id} · ${j.kind} · ${all.length} ${unit(j)}</h3>
+  ${infoGrid([['账号',acctLabel(j.acct)],['手机号',phone(U(j.uid).phone)],['项目',j.proj],['模型',`${j.model}　${j.res}`],['状态',stTag(jobSt(j))],['数量',`${j.children.length} ${unit(j)}`],['应扣 / 实扣',`${jobSum(j,'pre')} / ${jobSum(j,'real')}`],['出片时长',j.kind==='视频'?jobDur(j):'—'],['提交时间',j.t],['完成时间',j.done]])}
+  <div class="bar" style="margin-top:12px"><div class="seg" style="margin:0">${[['全部',all.length],['失败',fail.length],['成功',all.length-fail.length]].map(([k,c])=>`<button class="${st.f===k?'on':''}" onclick="subDlg('${id}','${k}',1)">${k} ${c}</button>`).join('')}</div>
+  <span class="sp"></span><input id="subKw" placeholder="搜子任务号" value="${st.kw}" style="width:180px" onkeydown="if(event.key==='Enter')subDlg('${id}',null,1,this.value.trim())"></div>
+  ${table(['子任务号','数量',...(j.kind==='视频'?['出片时长']:[]),'应扣','实扣','状态'],pg.map(c=>[c.id,'1 '+unit(j),...(j.kind==='视频'?[durTxt(c.ref,c.out)]:[]),c.pre,c.real,stTag(c.st)]),'没有符合条件的子任务')}
+  <div class="pager"><span class="sp"></span><span class="tip">总计：</span><b>${L.length}</b><button ${st.p===1?'disabled':''} onclick="subDlg('${id}',null,${st.p-1})">‹</button><button class="on">${st.p}</button><span class="tip">/ ${pages}</span><button ${st.p===pages?'disabled':''} onclick="subDlg('${id}',null,${st.p+1})">›</button></div>`,true);
+}
 function recDlg(kind,id,byOrder){
+  if(kind==='生成记录'&&/^A/.test(id))return subDlg(id);
   const R=REC[kind],items=byOrder?R.arr.filter(g=>g.ord===id):R.arr.filter(x=>(x.no||x.id)===id);
   if(!items.length){toast('找不到该记录');return}
   // 单条记录竖着显示「字段名　值」；最后一列（操作按钮）放到底部
-  const blocks=items.map(x=>{const cells=R.row(x);return kv(R.cols.map((c,i)=>[c,plain(cells[i])]).filter(([c])=>c))}).join('<div style="height:16px"></div>');
+  const blocks=items.map(x=>{const cells=R.row(x);return infoGrid(R.cols.map((c,i)=>[c,plain(cells[i])]).filter(([c,v])=>!(ONLY_SOME.has(c)&&v==='—')))}).join('<div style="height:12px"></div>');
   const acts=items.length===1&&kind!=='生成记录'&&R.cols[R.cols.length-1]===''?R.row(items[0])[R.cols.length-1].replace('class="link admin-only"','class="admin-only"').replace('<button class="link" disabled>','<button disabled>'):'';
   openDlg(`<h3>${items[0].kind==='adj'?'积分调整':kind} · ${id}</h3>${blocks}${acts?`<div class="ft">${acts}</div>`:''}`,true);
 }
-const relLink=r=>!r||r==='—'?'—':r[0]==='O'?`<button class="link" onclick="recDlg('订单','${r}')">${r}</button>`:r[0]==='J'?`<button class="link" onclick="recDlg('生成记录','${r}')">任务 ${r}</button>`:r[0]==='G'?`<button class="link" onclick="recDlg('订单','${r}')">调整 ${r}</button>`:r;
+const relLink=r=>!r||r==='—'?'—':r[0]==='O'?`<button class="link" onclick="recDlg('订单','${r}')">${r}</button>`:r[0]==='J'?`<button class="link" onclick="recDlg('生成记录','${r}')">任务 ${r}</button>`:r[0]==='A'?`<button class="link" onclick="subDlg('${r}')">任务 ${r}</button>`:r[0]==='G'?`<button class="link" onclick="recDlg('订单','${r}')">调整 ${r}</button>`:r;
 const ops=(...b)=>`<span class="row-actions">${b.join('')}</span>`;
 function setRole(r){role=r;document.body.classList.toggle('ro',r==='ro');if(r==='ro'&&cur==='后台账号'&&!detail)cur='用户管理';render()}
 
@@ -476,13 +537,17 @@ const REC={
     ['编号','手机号','账号','类型','档位','实付','积分','积分过期时间','剩余积分','支付方式','流水号 / 凭证 / 合同编号','状态','来源','原因','关联订单','时间','操作人'],
     x=>x.kind==='order'
       ?[x.no,phone(U(x.uid).phone),acctLabel(x.acct),x.type,x.tier,'¥'+n(x.amt),n(x.pts),ordExp(x),remainOf(x),x.pay,x.ref,`<span class="tag ${x.st==='已支付'?'g':'r'}">${x.st}</span>`,'—','—','—',x.t,x.op]
-      :[x.no,phone(U(x.uid).phone),acctLabel(x.acct),x.type,'—','—',(x.pts>0?'+':'')+n(x.pts),x.pts>0?x.exp:'—',x.pts>0?remainOf(x):'—','—','—','<span class="tag g">已完成</span>',x.cat||'其他',x.why||'—',relLink(x.ord),x.t,x.op]),
-  '积分流水':rec(flows,f=>f.uid,f=>f.acct,'任务ID / 订单号 / 调整ID / 批次ID','<select><option>全部类型</option></select>',f=>[f.rel,f.batch],
+      :[x.no,phone(U(x.uid).phone),acctLabel(x.acct),x.type,'—','—',(x.pts>0?'+':'')+n(x.pts),x.pts>0?x.exp:'—',x.pts>0?remainOf(x):'—','—','—','—',x.cat||'其他',x.why||'—',relLink(x.ord),x.t,x.op]),
+  '积分流水':rec(flows,f=>f.uid,f=>f.acct,'任务ID / 订单号 / 调整ID / 批次ID','<select><option>全部</option><option>获得</option><option>消耗</option></select>',f=>[f.rel,f.batch],
     ['时间','账号','持有人手机号','类型','变动','变动后余额','批次ID','关联','操作人'],
     f=>[f.t,acctLabel(f.acct),phone(U(f.uid).phone),f.type,(f.d>0?'+':'')+n(f.d),n(f.bal),f.batch,relLink(f.rel),f.op]),
-  '生成记录':rec(tasks,j=>j.uid,j=>j.acct,'任务ID / 项目名','<select><option>全部模型</option></select><select><option>全部状态</option></select>',j=>[j.id,j.proj],
-    ['任务ID','手机号','账号','项目','类型','模型','分辨率','时长(参考+出片)','参考图','应扣','实扣','状态','失败原因','厂商退费','提交时间','完成时间'],
-    j=>[j.id,phone(U(j.uid).phone),acctLabel(j.acct),j.proj,j.kind,j.model,j.res,j.dur,j.refs??0,j.pre,j.real,`<span class="tag ${j.st==='成功'?'g':'r'}">${j.st}</span>`,j.why,j.refund,j.t,j.done||'—']),
+  '生成记录':rec(tasks,j=>j.uid,j=>j.acct,'任务ID / 子任务号 / 项目名','<select><option>全部模型</option></select><select><option>全部状态</option></select>',j=>[j.id,j.proj,...(j.children||[]).map(c=>c.id)],
+    ['任务ID','手机号','账号','项目','类型','模型','分辨率','数量','出片时长','应扣','实扣','状态','厂商退费','提交时间','完成时间',''],
+    j=>{const fails=j.batch?j.children.filter(c=>c.st!=='成功').length:0;
+      return[j.id,
+      phone(U(j.uid).phone),acctLabel(j.acct),j.proj,j.kind,j.model,j.res,`${j.batch?j.children.length:1} ${unit(j)}`,jobDur(j),
+      jobSum(j,'pre'),jobSum(j,'real'),stTag(jobSt(j)),j.batch?(fails?'是':'—'):j.refund,j.t,j.done||'—',
+      j.batch?`<button class="link" onclick="subDlg('${j.id}','全部',1)">查看子任务</button>`:'']}),
 };
 
 // ---------- 页面 ----------
@@ -572,7 +637,7 @@ function teamPage(id){
   const t=teams.find(t=>t.id===id),owner=U(t.owner);
   const info=detailOverview({caption:'团队名称',name:teamName(t),identity:[[['团队ID',t.id]],[['主账号',owner.nick],['手机号',phone(owner.phone)]]],metrics:[['团队积分',n(teamPts(t))],['成员数',t.members.length+'/50'],['累计实付','¥'+n(t.paid)]],times:[['开通时间',t.created],['最近充值',t.lastPay]]});
   const body=detail.tab==='积分批次'
-    ?ptable(['批次ID','来源','初始积分','剩余（主账号）','预扣中','过期时间'],t.batches.map(b=>[b.id,b.src,n(b.pts),n(b.left),n(b.held||0),b.exp]),null,'D:批次')
+    ?ptable(['批次ID','来源','初始积分','剩余积分','其中主账号','预扣中','过期时间'],t.batches.map(b=>[b.id,b.src,n(b.pts),n(b.left+(b.dist||0)),n(b.left),n(b.held||0),b.exp]),null,'D:批次')
     :ptable(['手机号','昵称','角色','所属小组','积分余额'],t.members.map(m=>[phone(U(m[0]).phone),U(m[0]).nick,m[1]==='主账号'?'<span class="tag b">主账号</span>':m[1],m[2],n(m[3])]),null,'D:成员');
   return info+detailTabs([['积分批次',t.batches.length],['成员',t.members.length]],body);
 }
