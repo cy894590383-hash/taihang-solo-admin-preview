@@ -274,7 +274,7 @@ const users=[
 const teams=[
   {id:'T2001',owner:10002,members:[[10002,'主账号','—',41200],[10003,'组长','小周的小组',8000],[10004,'普通用户','小周的小组',2600]],
    paid:99999,created:'2026-10-20',lastPay:'2026-10-20',
-   batches:[{id:'B9001',pts:1320000,left:0,dist:10600,exp:'2027-04-18',src:'套餐 O20261020001'},{id:'B9002',pts:50000,left:41200,held:2000,exp:'2027-04-18',src:'调整 G3001'}]},
+   batches:[{id:'B9001',pts:1320000,left:0,dist:10600,exp:'2027-04-18',src:'套餐 O20261020001'},{id:'B9002',pts:50000,left:41200,held:2000,exp:'2027-04-18',src:'积分充值 O20261020002'}]},
 ];
 const orders=[
   {no:'O20260925003',uid:10001,acct:'个人',type:'通用积分',tier:'—',amt:30,pts:300,pay:'支付宝',ref:'2026092522001…',st:'已支付',t:'2026-09-25 20:11',op:'—',batch:'B7001',wd:0},
@@ -290,13 +290,13 @@ const flows=[
   {t:'2026-10-01 09:30',acct:'个人',uid:10002,type:'用户充值',d:300,bal:300,batch:'B7002',rel:'O20261001002',op:'—'},
   {t:'2026-10-06 14:05',acct:'个人',uid:10003,type:'用户充值',d:1070,bal:1070,batch:'B7003',rel:'O20261006004',op:'—'},
   {t:'2026-10-10 18:40',acct:'个人',uid:10004,type:'用户充值',d:1070,bal:1070,batch:'B7004',rel:'O20261010006',op:'—'},
-  {t:'2026-10-12 11:00',acct:'个人',uid:10005,type:'积分调整',d:100,bal:100,batch:'B7005',rel:'G2999',op:'admin-陈'},
+  {t:'2026-10-12 11:00',acct:'个人',uid:10005,type:'积分充值',d:100,bal:100,batch:'B7005',rel:'O20261012005',op:'admin-陈'},
   {t:'2026-11-01 14:20',acct:'崧果-王总的团队',uid:10004,type:'生成结算（多退）',d:20,bal:2600,batch:'B9001',rel:'J88213',op:'—'},
   {t:'2026-11-01 14:18',acct:'崧果-王总的团队',uid:10004,type:'生成预扣',d:-150,bal:2580,batch:'B9001',rel:'J88213',op:'—'},
   {t:'2026-11-01 11:03',acct:'个人',uid:10001,type:'失败释放',d:62,bal:5120,batch:'B8001',rel:'J88190',op:'—'},
   {t:'2026-11-01 11:02',acct:'个人',uid:10001,type:'生成预扣',d:-62,bal:5058,batch:'B8001',rel:'J88190',op:'—'},
   {t:'2026-10-21 09:10',acct:'崧果-王总的团队',uid:10003,type:'团队分配',d:10000,bal:10000,batch:'B9001',rel:'—',op:'崧果-王总'},
-  {t:'2026-10-20 15:03',acct:'崧果-王总的团队',uid:10002,type:'积分调整',d:50000,bal:1370000,batch:'B9002',rel:'G3001',op:'admin-陈'},
+  {t:'2026-10-20 15:03',acct:'崧果-王总的团队',uid:10002,type:'积分充值',d:50000,bal:1370000,batch:'B9002',rel:'O20261020002',op:'admin-陈'},
   {t:'2026-10-20 15:02',acct:'崧果-王总的团队',uid:10002,type:'套餐充值',d:1320000,bal:1320000,batch:'B9001',rel:'O20261020001',op:'admin-陈'},
 ];
 const tasks=[
@@ -304,9 +304,9 @@ const tasks=[
   {id:'J88190',uid:10001,acct:'个人',proj:'黑猫当铺 EP1',kind:'视频',model:'Seedance 2.0 Fast',res:'720P',dur:'5+5s',pre:62,real:0,st:'失败',why:'审核拦截',refund:'是',t:'2026-11-01 11:02',done:'2026-11-01 11:03',refs:2},
 ];
 const gifts=[
-  {id:'G2999',t:'2026-10-12 11:00',acct:'个人',uid:10005,pts:100,exp:'2026-11-11',cat:'内测',why:'测试金',ord:'',op:'admin-陈',batch:'B7005',wd:0},
-  {id:'G3001',t:'2026-10-20 15:03',acct:'崧果-王总的团队',uid:10002,pts:50000,exp:'2027-04-18',cat:'赠送',why:'首单加送（商务约定）',ord:'O20261020001',op:'admin-陈',batch:'B9002',wd:0},
-  {id:'G3000',t:'2026-10-31 10:00',acct:'个人',uid:10001,pts:4000,exp:'2026-11-30',cat:'内测',why:'测试金',ord:'',op:'admin-陈',batch:'B8002',wd:0},
+  {id:'O20261012005',t:'2026-10-12 11:00',acct:'个人',uid:10005,pts:100,exp:'2026-11-11',cat:'内测',why:'测试金',ord:'',op:'admin-陈',batch:'B7005',wd:0},
+  {id:'O20261020002',t:'2026-10-20 15:03',acct:'崧果-王总的团队',uid:10002,pts:50000,exp:'2027-04-18',cat:'赠送',why:'首单加送（商务约定）',ord:'O20261020001',op:'admin-陈',batch:'B9002',wd:0},
+  {id:'O20261031008',t:'2026-10-31 10:00',acct:'个人',uid:10001,pts:4000,exp:'2026-11-30',cat:'内测',why:'测试金',ord:'',op:'admin-陈',batch:'B8002',wd:0},
 ];
 // 演示分页用：给阿杰补 45 个历史生成任务和对应的预扣 / 结算流水（10 月）
 for(let i=1;i<=45;i++){const id='J87'+String(100+i),day=String(1+(i%28)).padStart(2,'0'),t=`2026-10-${day} ${String(9+i%10).padStart(2,'0')}:00`,cost=40+(i%5)*20;
@@ -329,11 +329,11 @@ for(let i=1;i<=45;i++){const id='J87'+String(100+i),day=String(1+(i%28)).padStar
 })();
 // 个人积分批次（团队的批次在 teams[].batches）
 const ub={
-  10001:[{id:'B8001',pts:7750,left:5120,exp:'2026-11-18',src:'订阅 O20261018007'},{id:'B8002',pts:4000,left:2500,exp:'2026-11-30',src:'调整 G3000'},{id:'B7001',pts:300,left:0,exp:'2027-03-24',src:'通用积分 O20260925003'}],
+  10001:[{id:'B8001',pts:7750,left:5120,exp:'2026-11-18',src:'订阅 O20261018007'},{id:'B8002',pts:4000,left:2500,exp:'2026-11-30',src:'积分充值 O20261031008'},{id:'B7001',pts:300,left:0,exp:'2027-03-24',src:'通用积分 O20260925003'}],
   10002:[{id:'B7002',pts:300,left:300,exp:'2027-03-30',src:'通用积分 O20261001002'}],
   10003:[{id:'B8101',pts:300,left:300,exp:'2027-04-23',src:'通用积分 O20261025013'},{id:'B7003',pts:1070,left:520,exp:'2026-11-05',src:'订阅 O20261006004'}],
   10004:[{id:'B7004',pts:1070,left:0,exp:'2026-11-09',src:'订阅 O20261010006'}],
-  10005:[{id:'B7005',pts:100,left:100,exp:'2026-11-11',src:'调整 G2999'}]};
+  10005:[{id:'B7005',pts:100,left:100,exp:'2026-11-11',src:'积分充值 O20261012005'}]};
 const logs=[
   {t:'2026-10-20 15:02',op:'admin-陈',type:'创建团队',obj:'T2001',before:'—',after:'主账号 13800000002，尊享，1,320,000 积分',note:'合同 HT-2026-018'},
 ];
@@ -507,6 +507,9 @@ function subDlg(id,f,p,kw){const j=tasks.find(t=>t.id===id);const st=subSt[id]=s
   ${table(['子任务号','数量',...(j.kind==='视频'?['出片时长']:[]),'应扣','实扣','状态'],pg.map(c=>[c.id,'1 '+unit(j),...(j.kind==='视频'?[durTxt(c.ref,c.out)]:[]),c.pre,c.real,stTag(c.st)]),'没有符合条件的子任务')}
   <div class="pager"><span class="sp"></span><span class="tip">总计：</span><b>${L.length}</b><button ${st.p===1?'disabled':''} onclick="subDlg('${id}',null,${st.p-1})">‹</button><button class="on">${st.p}</button><span class="tip">/ ${pages}</span><button ${st.p===pages?'disabled':''} onclick="subDlg('${id}',null,${st.p+1})">›</button></div>`,true);
 }
+// 积分回收不进订单，只在积分流水里关联回收单号；点开看来源、原因、从哪几批扣的
+function rcDlg(id){const g=gifts.find(x=>x.id===id);if(!g){toast('找不到该记录');return}
+  openDlg(`<h3>积分回收 · ${id}</h3>${infoGrid([['回收单号',id],['账号',acctLabel(g.acct)],['手机号',phone(U(g.uid).phone)],['回收积分',n(-g.pts)],['来源',g.cat||'其他'],['原因',g.why||'—'],['扣减批次',flows.find(f=>f.rel===id)?.batch||'—'],['关联订单',g.ord||'—'],['时间',g.t],['操作人',g.op]])}`,true)}
 function recDlg(kind,id,byOrder){
   if(kind==='生成记录'&&/^A/.test(id))return subDlg(id);
   const R=REC[kind],items=byOrder?R.arr.filter(g=>g.ord===id):R.arr.filter(x=>(x.no||x.id)===id);
@@ -514,9 +517,9 @@ function recDlg(kind,id,byOrder){
   // 单条记录竖着显示「字段名　值」；最后一列（操作按钮）放到底部
   const blocks=items.map(x=>{const cells=R.row(x);return infoGrid(R.cols.map((c,i)=>[c,plain(cells[i])]).filter(([c,v])=>!(ONLY_SOME.has(c)&&v==='—')))}).join('<div style="height:12px"></div>');
   const acts=items.length===1&&kind!=='生成记录'&&R.cols[R.cols.length-1]===''?R.row(items[0])[R.cols.length-1].replace('class="link admin-only"','class="admin-only"').replace('<button class="link" disabled>','<button disabled>'):'';
-  openDlg(`<h3>${items[0].kind==='adj'?'积分调整':kind} · ${id}</h3>${blocks}${acts?`<div class="ft">${acts}</div>`:''}`,true);
+  openDlg(`<h3>${kind} · ${id}</h3>${blocks}${acts?`<div class="ft">${acts}</div>`:''}`,true);
 }
-const relLink=r=>!r||r==='—'?'—':r[0]==='O'?`<button class="link" onclick="recDlg('订单','${r}')">${r}</button>`:r[0]==='J'?`<button class="link" onclick="recDlg('生成记录','${r}')">任务 ${r}</button>`:r[0]==='A'?`<button class="link" onclick="subDlg('${r}')">任务 ${r}</button>`:r[0]==='G'?`<button class="link" onclick="recDlg('订单','${r}')">调整 ${r}</button>`:r;
+const relLink=r=>!r||r==='—'?'—':r[0]==='R'?`<button class="link" onclick="rcDlg('${r}')">回收 ${r}</button>`:r[0]==='O'?`<button class="link" onclick="recDlg('订单','${r}')">${r}</button>`:r[0]==='J'?`<button class="link" onclick="recDlg('生成记录','${r}')">任务 ${r}</button>`:r[0]==='A'?`<button class="link" onclick="subDlg('${r}')">任务 ${r}</button>`:r[0]==='G'?`<button class="link" onclick="recDlg('订单','${r}')">调整 ${r}</button>`:r;
 const ops=(...b)=>`<span class="row-actions">${b.join('')}</span>`;
 function setRole(r){role=r;document.body.classList.toggle('ro',r==='view');if(r!=='manage'&&cur==='后台账号'&&!detail)cur='用户管理';render()}
 
@@ -530,18 +533,19 @@ const ordExp=o=>{if(o.st!=='已支付')return '—';const {b}=findBatch(o.batch|
 const remainOf=r=>{if(r.st&&r.st!=='已支付')return '—';const {b}=findBatch(r.batch||'');return b?n(b.left+(b.dist||0)):'—'};
 // 排序：按时间倒序（最新在上）
 const byTime=(arr,f=x=>x.t)=>[...arr].sort((a,b)=>String(f(b)).localeCompare(String(f(a))));
-// 每条记录的唯一标识（订单号 / 调整ID / 任务ID；流水用时间+类型+关联+人）
+// 每条记录的唯一标识（订单号 / 回收单号 / 任务ID；流水用时间+类型+关联+人）
 const idOf=x=>x.no||x.id||[x.t,x.type,x.rel,x.uid,x.d].join('|');
 const REC={
   // 订单管理：套餐订单 + 积分调整合成一张表，用「类型」区分；数据仍分开存
-  '订单':rec(()=>[...orders.map(o=>({...o,kind:'order'})),...gifts.map(g=>({...g,no:g.id,kind:'adj',type:g.pts>0?'积分充值':'积分回收'}))],
-    x=>x.uid,x=>x.acct,'订单号 / 调整ID / 合同编号',
-    '<select><option>全部类型</option><option>个人订阅</option><option>通用积分</option><option>团队会员（线下）</option><option>积分充值</option><option>积分回收</option></select><select><option>全部来源</option><option>赠送</option><option>补偿</option><option>内测</option><option>授信</option><option>退款</option><option>其他</option></select><select><option>全部状态</option></select>',x=>[x.no,x.ref||'',x.ord||''],
+  // 订单管理：用户买的订阅 / 通用积分、团队套餐充值，以及积分充值（0 元订单，和前台一致）；积分回收不进订单，只在积分流水里
+  '订单':rec(()=>[...orders.map(o=>({...o,kind:'order'})),...gifts.filter(g=>g.pts>0).map(g=>({...g,no:g.id,kind:'adj',type:'积分充值'}))],
+    x=>x.uid,x=>x.acct,'订单号 / 合同编号',
+    '<select><option>全部类型</option><option>个人订阅</option><option>通用积分</option><option>团队会员（线下）</option><option>积分充值</option></select><select><option>全部来源</option><option>赠送</option><option>补偿</option><option>内测</option><option>授信</option><option>其他</option></select><select><option>全部状态</option></select>',x=>[x.no,x.ref||'',x.ord||''],
     ['编号','手机号','账号','类型','档位','实付','积分','积分过期时间','剩余积分','支付方式','流水号 / 凭证 / 合同编号','状态','来源','原因','关联订单','时间','操作人'],
     x=>x.kind==='order'
       ?[x.no,phone(U(x.uid).phone),acctLabel(x.acct),x.type,x.tier,'¥'+n(x.amt),n(x.pts),ordExp(x),remainOf(x),x.pay,x.ref,`<span class="tag ${x.st==='已支付'?'g':'r'}">${x.st}</span>`,'—','—','—',x.t,x.op]
-      :[x.no,phone(U(x.uid).phone),acctLabel(x.acct),x.type,'—','—',(x.pts>0?'+':'')+n(x.pts),x.pts>0?x.exp:'—',x.pts>0?remainOf(x):'—','—','—','—',x.cat||'其他',x.why||'—',relLink(x.ord),x.t,x.op]),
-  '积分流水':rec(flows,f=>f.uid,f=>f.acct,'任务ID / 订单号 / 调整ID / 批次ID','<select><option>全部</option><option>获得</option><option>消耗</option></select>',f=>[f.rel,f.batch],
+      :[x.no,phone(U(x.uid).phone),acctLabel(x.acct),x.type,'—','¥0',n(x.pts),x.exp,remainOf(x),'—','—','<span class="tag g">已支付</span>',x.cat||'其他',x.why||'—',relLink(x.ord),x.t,x.op]),
+  '积分流水':rec(flows,f=>f.uid,f=>f.acct,'任务ID / 订单号 / 回收单号 / 批次ID','<select><option>全部</option><option>获得</option><option>消耗</option></select>',f=>[f.rel,f.batch],
     ['时间','账号','持有人手机号','类型','变动','变动后余额','批次ID','关联','操作人'],
     f=>[f.t,acctLabel(f.acct),phone(U(f.uid).phone),f.type,(f.d>0?'+':'')+n(f.d),n(f.bal),f.batch,relLink(f.rel),f.op]),
   '生成记录':rec(tasks,j=>j.uid,j=>j.acct,'任务ID / 子任务号 / 项目名','<select><option>全部模型</option></select><select><option>全部状态</option></select>',j=>[j.id,j.proj,...(j.children||[]).map(c=>c.id)],
@@ -781,16 +785,16 @@ function doAdj(){
     if(o.acct!==acct||o.uid!==uid){toast('该订单不属于这个账号');return}}
   const y=adjAvail();
   if(v<0&&-v>y){toast(`回收超过当前可用（${n(y)}）`);return}
-  const t0=now(),gid='G'+(3001+gifts.length+Math.floor(Math.random()*900));let bid,exp='—';
+  const t0=now(),gid=(v>0?'O':'R')+t0.replace(/\D/g,'').slice(0,12)+String(Math.floor(Math.random()*90+10));let bid,exp='—';
   if(v>0){bid='B'+(9000+Math.floor(Math.random()*999));exp=addDays(t?180:30);
-    const b={id:bid,pts:v,left:v,exp,src:'调整 '+gid};
+    const b={id:bid,pts:v,left:v,exp,src:'积分充值 '+gid};
     if(t){t.members[0][3]+=v;t.batches.push(b)}else{U(uid).pts+=v;(ub[uid]=ub[uid]||[]).push(b)}}
   else{let need=-v;const used=[];
     for(const b of adjBatches()){if(!need)break;const k=Math.min(need,b.left-(b.held||0));b.left-=k;need-=k;used.push(b.id)}
     bid=used.join(',');if(t)t.members[0][3]+=v;else U(uid).pts+=v}
   gifts.unshift({id:gid,t:t0,acct,uid,pts:v,exp,cat,why,ord:ordNo,op:'admin-陈',batch:v>0?bid:'',wd:0});
-  flows.unshift({t:t0,acct,uid,type:'积分调整',d:v,bal:t?t.members[0][3]:U(uid).pts,batch:bid,rel:gid,op:'admin-陈'});
-  logs.unshift({t:t0,op:'admin-陈',type:'积分调整',obj:t?t.id:uid,before:'—',after:`${acct} ${v>0?'+':''}${n(v)} 积分${v>0?'，过期 '+exp:''}`,note:[cat,why].filter(Boolean).join('：')});
+  flows.unshift({t:t0,acct,uid,type:v>0?'积分充值':'积分回收',d:v,bal:t?t.members[0][3]:U(uid).pts,batch:bid,rel:gid,op:'admin-陈'});
+  logs.unshift({t:t0,op:'admin-陈',type:v>0?'积分充值':'积分回收',obj:t?t.id:uid,before:'—',after:`${acct} ${v>0?'+':''}${n(v)} 积分${v>0?'，过期 '+exp:''}`,note:[cat,why].filter(Boolean).join('：')});
   closeDlg();render();toast(`${v>0?'积分充值':'积分回收'}成功：${v>0?'+':''}${n(v)}`);
 }
 $('#mask').onclick=e=>{if(e.target.id==='mask')closeDlg()};
