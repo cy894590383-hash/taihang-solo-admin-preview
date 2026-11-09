@@ -216,6 +216,7 @@ td.sub-id{padding-left:34px}
 .st-link{padding:0;border:none;background:none;cursor:pointer}
 .st-link .tag{text-decoration:underline;text-underline-offset:2px}
 .ellip{display:inline-block;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+body.noedit .corp-edit{display:none!important}
 </style>
 </head>
 <body>
@@ -248,6 +249,7 @@ td.sub-id{padding-left:34px}
       <select id="role" onchange="setRole(this.value)">
         <option value="manage">超级管理员</option>
         <option value="edit">管理员</option>
+        <option value="sales">销售</option>
         <option value="view">访客</option>
       </select>
     </span>
@@ -341,11 +343,12 @@ const logs=[
 const admins=[
   {acct:'13900000001',name:'陈',role:'超级管理员',st:'启用',created:'2026-10-15',last:'2026-11-02'},
   {acct:'13900000002',name:'李',role:'访客',st:'启用',created:'2026-10-15',last:'2026-11-01'},
+  {acct:'13900000004',name:'赵',role:'销售',st:'启用',created:'2026-11-08',last:'2026-11-08'},
   {acct:'13900000003',name:'王',role:'管理员',st:'启用',created:'2026-10-20',last:'2026-11-03'},
 ];
 
 // ---------- 工具 ----------
-// 后台角色三档：view 访客（只看）/ edit 管理员（业务操作 + 导出）/ manage 超级管理员（再加后台账号管理）
+// 后台角色：view 访客（只看）/ sales 销售（只看 + 编辑企业名称）/ edit 管理员（业务操作 + 导出）/ manage 超级管理员（再加后台账号管理）
 let role='manage',cur='用户管理';
 const $=s=>document.querySelector(s);
 const U=id=>users.find(u=>u.id===id);
@@ -377,7 +380,7 @@ function ptable(cols,rows,ids,k=qk()){const st=pg[k]||(pg[k]={p:1,size:20}),tota
   const from=(st.p-1)*st.size,nums=[];
   const sk=[k,st.p,st.size,q[k]||'',pq[k]||''].join('#');if(sk!==selFor){sel.clear();selFor=sk}
   if(ids){expTotal=total;
-    if(role!=='view'){pageIds=ids.slice(from,from+st.size);const all=pageIds.length&&pageIds.every(i=>sel.has(String(i)));
+    if(role==='edit'||role==='manage'){pageIds=ids.slice(from,from+st.size);const all=pageIds.length&&pageIds.every(i=>sel.has(String(i)));
       cols=[`<input type="checkbox" title="全选本页" ${all?'checked':''} onclick="selAll(this.checked)">`,...cols];
       rows=rows.map((r,i)=>[`<input type="checkbox" ${sel.has(String(ids[i]))?'checked':''} onclick="toggleSel('${ids[i]}')">`,...r])}}
   for(let i=1;i<=pages;i++)if(i===1||i===pages||Math.abs(i-st.p)<=2)nums.push(i);else if(nums[nums.length-1]!=='…')nums.push('…');
@@ -446,8 +449,8 @@ function drPick(v){drSet({p:v})}
 function drApply(){const a=$('#drFrom').value,b=$('#drTo').value;
   if(!a||!b){toast('请选择开始和结束日期');return}if(a>b){toast('开始日期不能晚于结束日期');return}drSet({p:'custom',from:a,to:b})}
 document.addEventListener('click',()=>{if(drOpen){drOpen=null;render()}});
-function bar(ph,extra='',people,recent,right=''){const v=q[qk()]||'',pv=pq[qk()]||'';
-  return `<div class="bar">${people?ipt(`<input id="pbox" placeholder="昵称 / 手机号 / 团队名 / 企业名称" value="${pv}" style="width:200px" ${enter}>`,pv,'clearP()'):''}${ipt(`<input id="qbox" placeholder="${ph}" value="${v}" style="width:220px" ${enter}>`,v,'clearQ()')}<button class="search-btn" onclick="search()">搜索</button>${drBtn()}${extra}<span class="sp"></span><button class="admin-only" id="expBtn" onclick="doExport()">导出</button>${right}</div>`}
+function bar(ph,extra='',people,recent,right='',noExport){const v=q[qk()]||'',pv=pq[qk()]||'';
+  return `<div class="bar">${people?ipt(`<input id="pbox" placeholder="昵称 / 手机号 / 团队名 / 企业名称" value="${pv}" style="width:200px" ${enter}>`,pv,'clearP()'):''}${ipt(`<input id="qbox" placeholder="${ph}" value="${v}" style="width:220px" ${enter}>`,v,'clearQ()')}<button class="search-btn" onclick="search()">搜索</button>${drBtn()}${extra}<span class="sp"></span>${noExport?'':'<button class="admin-only" id="expBtn" onclick="doExport()">导出</button>'}${right}</div>`}
 function search(){if(pg[qk()])pg[qk()].p=1;q[qk()]=$('#qbox').value.trim();const pb=$('#pbox');if(pb)pq[qk()]=pb.value.trim();render()}
 function clearQ(){if(pg[qk()])pg[qk()].p=1;q[qk()]='';render()}
 function clearP(){if(pg[qk()])pg[qk()].p=1;pq[qk()]='';render()}
@@ -492,7 +495,7 @@ const stTag=s=>`<span class="tag ${/成功$/.test(s)&&!/部分/.test(s)?'g':'r'}
 const failFirst=cs=>[...cs];
 function toggleExp(id){expd.has(id)?expd.delete(id):expd.add(id);render()}
 // 子任务行：直接插在主任务行下面，默认折叠；最多显示 10 条（按 1-N 顺序），更多的进「查看全部」弹窗
-function subRows(j){if(!j.batch||!expd.has(j.id))return '';const lead=role!=='view'?'<td></td>':'',cs=failFirst(j.children),show=cs.slice(0,10);
+function subRows(j){if(!j.batch||!expd.has(j.id))return '';const lead=role==='edit'||role==='manage'?'<td></td>':'',cs=failFirst(j.children),show=cs.slice(0,10);
   return show.map(c=>`<tr class="sub">${lead}<td class="sub-id">${c.id}</td><td></td><td></td><td></td><td></td><td></td><td></td><td>1 ${unit(j)}</td><td>${j.kind==='视频'?durTxt(c.ref,c.out):'—'}</td><td>${c.pre}</td><td>${c.real}</td><td>${stTag(c.st)}</td><td>${c.st==='成功'?'—':'是'}</td><td>${j.t}</td><td>${j.done}</td></tr>`).join('')
     +(cs.length>10?`<tr class="sub">${lead}<td colspan="15" class="sub-id"><button class="link" onclick="subDlg('${j.id}')">查看全部 ${cs.length} 条 →</button></td></tr>`:'');}
 // 「查看全部」弹窗：按状态筛选、搜子任务号、分页
@@ -522,7 +525,7 @@ function recDlg(kind,id,byOrder){
 }
 const relLink=r=>!r||r==='—'?'—':r[0]==='R'?`<button class="link" onclick="rcDlg('${r}')">回收 ${r}</button>`:r[0]==='O'?`<button class="link" onclick="recDlg('订单','${r}')">${r}</button>`:r[0]==='J'?`<button class="link" onclick="recDlg('生成记录','${r}')">任务 ${r}</button>`:r[0]==='A'?`<button class="link" onclick="subDlg('${r}')">任务 ${r}</button>`:r[0]==='G'?`<button class="link" onclick="recDlg('订单','${r}')">调整 ${r}</button>`:r;
 const ops=(...b)=>`<span class="row-actions">${b.join('')}</span>`;
-function setRole(r){role=r;document.body.classList.toggle('ro',r==='view');if(r!=='manage'&&cur==='后台账号'&&!detail)cur='用户管理';render()}
+function setRole(r){role=r;document.body.classList.toggle('ro',r==='view'||r==='sales');document.body.classList.toggle('noedit',r==='view');if(r!=='manage'&&cur==='后台账号'&&!detail)cur='用户管理';render()}
 
 // ---------- 四类记录（列表页和记录弹窗共用同一套列） ----------
 const rec=(src,uidOf,acctOf,ph,extra,keys,cols,row)=>({get arr(){return typeof src==='function'?src():src},cols,row,
@@ -560,14 +563,14 @@ const REC={
 
 // ---------- 页面 ----------
 const PAGES={
-  '用户管理':()=>bar('手机号 / 用户ID / 昵称 / 企业名称','<select><option>全部会员档位</option></select>')+
+  '用户管理':()=>bar('手机号 / 用户ID / 昵称 / 企业名称','<select><option>全部会员档位</option></select>',0,0,'',1)+
     ptable(['用户ID','手机号','昵称','企业名称','注册时间','最近登录','会员档位','会员到期','个人积分','加入团队',''],
       (L=>L.map(u=>[u.id,phone(u.phone),u.nick,ellip(u.corp),u.reg,u.last,u.vip,u.exp,n(u.pts),teams.filter(t=>t.members.some(m=>m[0]===u.id)).length,
-        ops(`<button class="link" onclick="userDetail(${u.id})">详情</button>`,`<button class="link" onclick="corpDlg('u',${u.id})">编辑</button>`,`<button class="link admin-only" onclick="adjDlg(${u.id})">积分调整</button>`)]))(byTime(S(users,u=>[u.id,u.phone,u.nick,u.corp||'']),u=>u.reg)),byTime(S(users,u=>[u.id,u.phone,u.nick,u.corp||'']),u=>u.reg).map(u=>u.id)),
-  '团队管理':()=>bar('团队ID / 团队名称 / 企业名称 / 主账号手机号','',0,0,`<button class="pri admin-only" onclick="createTeam()">创建团队</button>`)+
+        ops(`<button class="link" onclick="userDetail(${u.id})">详情</button>`,`<button class="link corp-edit" onclick="corpDlg('u',${u.id})">编辑</button>`,`<button class="link admin-only" onclick="adjDlg(${u.id})">积分调整</button>`)]))(byTime(S(users,u=>[u.id,u.phone,u.nick,u.corp||'']),u=>u.reg))),
+  '团队管理':()=>bar('团队ID / 团队名称 / 企业名称 / 主账号手机号','',0,0,`<button class="pri admin-only" onclick="createTeam()">创建团队</button>`,1)+
     ptable(['团队ID','团队名称','企业名称','主账号手机号','成员数','团队积分余额','累计实付','开通时间','最近充值',''],
       (L=>L.map(t=>[t.id,teamName(t),ellip(t.corp),phone(U(t.owner).phone),t.members.length+'/50',n(teamPts(t)),'¥'+n(t.paid),t.created,t.lastPay,
-        ops(`<button class="link" onclick="teamDetail('${t.id}')">详情</button>`,`<button class="link" onclick="corpDlg('t','${t.id}')">编辑</button>`,`<button class="link admin-only" onclick="recharge('${t.id}')">套餐充值</button>`,`<button class="link admin-only" onclick="adjDlg(null,'${t.id}')">积分调整</button>`)]))(byTime(S(teams,t=>[t.id,teamName(t),t.corp||'',U(t.owner).phone]),t=>t.created)),byTime(S(teams,t=>[t.id,teamName(t),t.corp||'',U(t.owner).phone]),t=>t.created).map(t=>t.id)),
+        ops(`<button class="link" onclick="teamDetail('${t.id}')">详情</button>`,`<button class="link corp-edit" onclick="corpDlg('t','${t.id}')">编辑</button>`,`<button class="link admin-only" onclick="recharge('${t.id}')">套餐充值</button>`,`<button class="link admin-only" onclick="adjDlg(null,'${t.id}')">积分调整</button>`)]))(byTime(S(teams,t=>[t.id,teamName(t),t.corp||'',U(t.owner).phone]),t=>t.created))),
   '订单管理':()=>REC['订单'].list(),
   '积分流水':()=>REC['积分流水'].list(),
   '生成记录':()=>REC['生成记录'].list(),
@@ -580,7 +583,7 @@ const PAGES={
 // 页面级操作按钮，放在标题行右侧（和标题对齐）
 // 列表里的企业名称：最多显示 8 个字，超出用省略号，鼠标悬停显示全名
 const ellip=v=>!v?'—':v.length>8?`<span class="ellip" title="${v}">${v.slice(0,8)}…</span>`:v;
-// 编辑：用户、团队都有自己的企业名称（销售标记客户用），所有角色（含访客）都能编辑；选填，最多 50 字；改动写操作日志
+// 编辑：用户、团队都有自己的企业名称（销售标记客户用），销售、管理员、超级管理员可编辑（访客不可）；选填，最多 50 字；改动写操作日志
 function corpDlg(k,id){const o=k==='u'?U(id):teams.find(t=>t.id===id);
   // 标题只写「编辑」；是谁放在下面，置灰不可改
   const ro=(k==='u'?[['昵称',o.nick],['手机号',phone(o.phone)]]:[['团队名称',`${teamName(o)}（${o.id}）`],['主账号手机号',phone(U(o.owner).phone)]]).map(([l,v])=>`<div class="f"><label>${l}</label><input value="${v}" disabled></div>`).join('');
@@ -591,8 +594,8 @@ function saveCorp(k,id){const o=k==='u'?U(+id):teams.find(t=>t.id===id),v=$('#co
   logs.unshift({t:now(),op:'admin-陈',type:'编辑企业名称',obj:k==='u'?+id:id,before,after:v||'—',note:''});closeDlg();render();toast('已保存')}
 function headActs(){
   if(detail){const id=detail.id;
-    if(detail.t==='u'){const u=U(id);return `<button onclick="corpDlg('u',${id})">编辑</button><button class="admin-only" onclick="adjDlg(${id})">积分调整</button>`}
-    return `<button onclick="corpDlg('t','${id}')">编辑</button><button class="admin-only" onclick="adjDlg(null,'${id}')">积分调整</button><button class="pri admin-only" onclick="recharge('${id}')">套餐充值</button>`}
+    if(detail.t==='u'){const u=U(id);return `<button class="corp-edit" onclick="corpDlg('u',${id})">编辑</button><button class="admin-only" onclick="adjDlg(${id})">积分调整</button>`}
+    return `<button class="corp-edit" onclick="corpDlg('t','${id}')">编辑</button><button class="admin-only" onclick="adjDlg(null,'${id}')">积分调整</button><button class="pri admin-only" onclick="recharge('${id}')">套餐充值</button>`}
   return {'后台账号':`<button class="pri admin-only" onclick="acctDlg()">新增账号</button>`}[cur]||'';
 }
 // 左侧菜单图标：内联 SVG，离线打开也可显示，颜色跟随菜单文字。
@@ -733,7 +736,7 @@ function acctDlg(i){
   const a=i==null?null:admins[i];
   openDlg(`<h3>${a?`权限调整 · ${a.name}（${a.acct}）`:'新增后台账号'}</h3>
   ${a?'':`<div class="f"><label>手机号<span class="req">*</span></label><input id="aAcct" placeholder="用这个手机号 + 验证码登录后台"></div><div class="f"><label>姓名<span class="req">*</span></label><input id="aName"></div>`}
-  <div class="f"><label>角色<span class="req">*</span></label><select id="aRole">${['访客','管理员','超级管理员'].map(x=>`<option ${a&&a.role===x?'selected':''}>${x}</option>`).join('')}</select></div>
+  <div class="f"><label>角色<span class="req">*</span></label><select id="aRole">${['访客','销售','管理员','超级管理员'].map(x=>`<option ${a&&a.role===x?'selected':''}>${x}</option>`).join('')}</select></div>
   <div class="ft"><button onclick="closeDlg()">取消</button><button class="pri" onclick="saveAcct(${i==null?'null':i})">保存</button></div>`);
 }
 function saveAcct(i){
