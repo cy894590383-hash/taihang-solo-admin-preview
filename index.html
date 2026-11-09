@@ -215,6 +215,7 @@ td.sub-id{padding-left:34px}
 .ig-v{font-size:14px;color:#111827;word-break:break-all}
 .st-link{padding:0;border:none;background:none;cursor:pointer}
 .st-link .tag{text-decoration:underline;text-underline-offset:2px}
+.ellip{display:inline-block;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
 </style>
 </head>
 <body>
@@ -265,14 +266,14 @@ const TIERS=[ // 团队档位，按提供的定价图更新
   {name:'尊享',price:99999,pts:1320000},
 ];
 const users=[
-  {id:10001,phone:'13800000001',nick:'林导',reg:'2026-09-20',last:'2026-11-01',vip:'高级',exp:'2026-11-18',pts:7620},
-  {id:10002,phone:'13800000002',nick:'崧果-王总',reg:'2026-09-21',last:'2026-11-02',vip:'—',exp:'—',pts:300},
-  {id:10003,phone:'13800000003',nick:'小周',reg:'2026-10-02',last:'2026-10-30',vip:'基础',exp:'2026-11-05',pts:820},
+  {id:10001,phone:'13800000001',nick:'林导',corp:'黑猫影视工作室',reg:'2026-09-20',last:'2026-11-01',vip:'高级',exp:'2026-11-18',pts:7620},
+  {id:10002,phone:'13800000002',nick:'崧果-王总',corp:'崧果文化传媒有限公司',reg:'2026-09-21',last:'2026-11-02',vip:'—',exp:'—',pts:300},
+  {id:10003,phone:'13800000003',nick:'小周',corp:'崧果文化传媒有限公司',reg:'2026-10-02',last:'2026-10-30',vip:'基础',exp:'2026-11-05',pts:820},
   {id:10004,phone:'13800000004',nick:'阿杰',reg:'2026-10-10',last:'2026-10-28',vip:'—',exp:'—',pts:0},
   {id:10005,phone:'13800000005',nick:'测试号',reg:'2026-10-12',last:'2026-10-12',vip:'—',exp:'—',pts:100},
 ];
 const teams=[
-  {id:'T2001',owner:10002,members:[[10002,'主账号','—',41200],[10003,'组长','小周的小组',8000],[10004,'普通用户','小周的小组',2600]],
+  {id:'T2001',owner:10002,corp:'崧果文化传媒有限公司',members:[[10002,'主账号','—',41200],[10003,'组长','小周的小组',8000],[10004,'普通用户','小周的小组',2600]],
    paid:99999,created:'2026-10-20',lastPay:'2026-10-20',
    batches:[{id:'B9001',pts:1320000,left:0,dist:10600,exp:'2027-04-18',src:'套餐 O20261020001'},{id:'B9002',pts:50000,left:41200,held:2000,exp:'2027-04-18',src:'积分充值 O20261020002'}]},
 ];
@@ -412,7 +413,7 @@ const S=(arr,keys)=>{const v=(q[qk()]||'').trim();arr=T(arr);return v?arr.filter
 // 记录里的账号列：团队显示「团队名（团队ID）」，同名团队也能分清
 const acctLabel=a=>{if(a==='个人')return '个人';const t=teams.find(t=>teamName(t)===a);return t?`${a}（${t.id}）`:a};
 const P=(arr,uidOf,acctOf)=>{const v=(pq[qk()]||'').trim();if(!v)return arr;
-  return arr.filter(x=>{const u=U(uidOf(x));return [u.nick,u.phone,acctOf(x)].some(f=>f.includes(v))})};
+  return arr.filter(x=>{const u=U(uidOf(x)),a=acctOf(x),tm=teams.find(t=>teamName(t)===a);return [u.nick,u.phone,a,a==='个人'?(u.corp||''):(tm&&tm.corp||'')].some(f=>f.includes(v))})};
 // 输入框内带删除按钮：有内容才显示，点一下清空
 const ipt=(inner,v,onX)=>`<span class="ipt">${inner}<button class="x" style="display:${v?'block':'none'}" onclick="${onX}">✕</button></span>`;
 const showX=el=>{el.parentNode.querySelector('.x').style.display=el.value?'block':'none'};
@@ -446,7 +447,7 @@ function drApply(){const a=$('#drFrom').value,b=$('#drTo').value;
   if(!a||!b){toast('请选择开始和结束日期');return}if(a>b){toast('开始日期不能晚于结束日期');return}drSet({p:'custom',from:a,to:b})}
 document.addEventListener('click',()=>{if(drOpen){drOpen=null;render()}});
 function bar(ph,extra='',people,recent,right=''){const v=q[qk()]||'',pv=pq[qk()]||'';
-  return `<div class="bar">${people?ipt(`<input id="pbox" placeholder="昵称 / 手机号 / 团队名" value="${pv}" style="width:200px" ${enter}>`,pv,'clearP()'):''}${ipt(`<input id="qbox" placeholder="${ph}" value="${v}" style="width:220px" ${enter}>`,v,'clearQ()')}<button class="search-btn" onclick="search()">搜索</button>${drBtn()}${extra}<span class="sp"></span><button class="admin-only" id="expBtn" onclick="doExport()">导出</button>${right}</div>`}
+  return `<div class="bar">${people?ipt(`<input id="pbox" placeholder="昵称 / 手机号 / 团队名 / 企业名称" value="${pv}" style="width:200px" ${enter}>`,pv,'clearP()'):''}${ipt(`<input id="qbox" placeholder="${ph}" value="${v}" style="width:220px" ${enter}>`,v,'clearQ()')}<button class="search-btn" onclick="search()">搜索</button>${drBtn()}${extra}<span class="sp"></span><button class="admin-only" id="expBtn" onclick="doExport()">导出</button>${right}</div>`}
 function search(){if(pg[qk()])pg[qk()].p=1;q[qk()]=$('#qbox').value.trim();const pb=$('#pbox');if(pb)pq[qk()]=pb.value.trim();render()}
 function clearQ(){if(pg[qk()])pg[qk()].p=1;q[qk()]='';render()}
 function clearP(){if(pg[qk()])pg[qk()].p=1;pq[qk()]='';render()}
@@ -559,14 +560,14 @@ const REC={
 
 // ---------- 页面 ----------
 const PAGES={
-  '用户管理':()=>bar('手机号 / 用户ID / 昵称','<select><option>全部会员档位</option></select>')+
-    ptable(['用户ID','手机号','昵称','注册时间','最近登录','会员档位','会员到期','个人积分','加入团队',''],
-      (L=>L.map(u=>[u.id,phone(u.phone),u.nick,u.reg,u.last,u.vip,u.exp,n(u.pts),teams.filter(t=>t.members.some(m=>m[0]===u.id)).length,
-        ops(`<button class="link" onclick="userDetail(${u.id})">详情</button>`,`<button class="link admin-only" onclick="adjDlg(${u.id})">积分调整</button>`)]))(byTime(S(users,u=>[u.id,u.phone,u.nick]),u=>u.reg)),byTime(S(users,u=>[u.id,u.phone,u.nick]),u=>u.reg).map(u=>u.id)),
-  '团队管理':()=>bar('团队ID / 团队名称 / 主账号手机号','',0,0,`<button class="pri admin-only" onclick="createTeam()">创建团队</button>`)+
-    ptable(['团队ID','团队名称','主账号手机号','成员数','团队积分余额','累计实付','开通时间','最近充值',''],
-      (L=>L.map(t=>[t.id,teamName(t),phone(U(t.owner).phone),t.members.length+'/50',n(teamPts(t)),'¥'+n(t.paid),t.created,t.lastPay,
-        ops(`<button class="link" onclick="teamDetail('${t.id}')">详情</button>`,`<button class="link admin-only" onclick="recharge('${t.id}')">套餐充值</button>`,`<button class="link admin-only" onclick="adjDlg(null,'${t.id}')">积分调整</button>`)]))(byTime(S(teams,t=>[t.id,teamName(t),U(t.owner).phone]),t=>t.created)),byTime(S(teams,t=>[t.id,teamName(t),U(t.owner).phone]),t=>t.created).map(t=>t.id)),
+  '用户管理':()=>bar('手机号 / 用户ID / 昵称 / 企业名称','<select><option>全部会员档位</option></select>')+
+    ptable(['用户ID','手机号','昵称','企业名称','注册时间','最近登录','会员档位','会员到期','个人积分','加入团队',''],
+      (L=>L.map(u=>[u.id,phone(u.phone),u.nick,ellip(u.corp),u.reg,u.last,u.vip,u.exp,n(u.pts),teams.filter(t=>t.members.some(m=>m[0]===u.id)).length,
+        ops(`<button class="link" onclick="userDetail(${u.id})">详情</button>`,`<button class="link" onclick="corpDlg('u',${u.id})">编辑</button>`,`<button class="link admin-only" onclick="adjDlg(${u.id})">积分调整</button>`)]))(byTime(S(users,u=>[u.id,u.phone,u.nick,u.corp||'']),u=>u.reg)),byTime(S(users,u=>[u.id,u.phone,u.nick,u.corp||'']),u=>u.reg).map(u=>u.id)),
+  '团队管理':()=>bar('团队ID / 团队名称 / 企业名称 / 主账号手机号','',0,0,`<button class="pri admin-only" onclick="createTeam()">创建团队</button>`)+
+    ptable(['团队ID','团队名称','企业名称','主账号手机号','成员数','团队积分余额','累计实付','开通时间','最近充值',''],
+      (L=>L.map(t=>[t.id,teamName(t),ellip(t.corp),phone(U(t.owner).phone),t.members.length+'/50',n(teamPts(t)),'¥'+n(t.paid),t.created,t.lastPay,
+        ops(`<button class="link" onclick="teamDetail('${t.id}')">详情</button>`,`<button class="link" onclick="corpDlg('t','${t.id}')">编辑</button>`,`<button class="link admin-only" onclick="recharge('${t.id}')">套餐充值</button>`,`<button class="link admin-only" onclick="adjDlg(null,'${t.id}')">积分调整</button>`)]))(byTime(S(teams,t=>[t.id,teamName(t),t.corp||'',U(t.owner).phone]),t=>t.created)),byTime(S(teams,t=>[t.id,teamName(t),t.corp||'',U(t.owner).phone]),t=>t.created).map(t=>t.id)),
   '订单管理':()=>REC['订单'].list(),
   '积分流水':()=>REC['积分流水'].list(),
   '生成记录':()=>REC['生成记录'].list(),
@@ -577,10 +578,21 @@ const PAGES={
       a.acct===ME?'<span class="tip">当前登录</span>':ops(`<button class="link admin-only" onclick="acctDlg(${i})">权限调整</button>`,`<button class="link admin-only" onclick="toggleAcct(${i})">${a.st==='启用'?'停用':'启用'}</button>`)])),
 };
 // 页面级操作按钮，放在标题行右侧（和标题对齐）
+// 列表里的企业名称：最多显示 8 个字，超出用省略号，鼠标悬停显示全名
+const ellip=v=>!v?'—':v.length>8?`<span class="ellip" title="${v}">${v.slice(0,8)}…</span>`:v;
+// 编辑：用户、团队都有自己的企业名称（销售标记客户用），所有角色（含访客）都能编辑；选填，最多 50 字；改动写操作日志
+function corpDlg(k,id){const o=k==='u'?U(id):teams.find(t=>t.id===id);
+  // 标题只写「编辑」；是谁放在下面，置灰不可改
+  const ro=(k==='u'?[['昵称',o.nick],['手机号',phone(o.phone)]]:[['团队名称',`${teamName(o)}（${o.id}）`],['主账号手机号',phone(U(o.owner).phone)]]).map(([l,v])=>`<div class="f"><label>${l}</label><input value="${v}" disabled></div>`).join('');
+  openDlg(`<h3>编辑</h3>${ro}<div class="f"><label>企业名称</label><input id="corpIn" maxlength="50" value="${o.corp||''}" placeholder="选填，如：上海安数致行科技有限公司"></div>
+  <div class="ft"><button onclick="closeDlg()">取消</button><button class="pri" onclick="saveCorp('${k}','${id}')">保存</button></div>`)}
+function saveCorp(k,id){const o=k==='u'?U(+id):teams.find(t=>t.id===id),v=$('#corpIn').value.trim(),before=o.corp||'—';
+  if(v===(o.corp||'')){closeDlg();return}o.corp=v;
+  logs.unshift({t:now(),op:'admin-陈',type:'编辑企业名称',obj:k==='u'?+id:id,before,after:v||'—',note:''});closeDlg();render();toast('已保存')}
 function headActs(){
   if(detail){const id=detail.id;
-    if(detail.t==='u'){const u=U(id);return `<button class="admin-only" onclick="adjDlg(${id})">积分调整</button>`}
-    return `<button class="admin-only" onclick="adjDlg(null,'${id}')">积分调整</button><button class="pri admin-only" onclick="recharge('${id}')">套餐充值</button>`}
+    if(detail.t==='u'){const u=U(id);return `<button onclick="corpDlg('u',${id})">编辑</button><button class="admin-only" onclick="adjDlg(${id})">积分调整</button>`}
+    return `<button onclick="corpDlg('t','${id}')">编辑</button><button class="admin-only" onclick="adjDlg(null,'${id}')">积分调整</button><button class="pri admin-only" onclick="recharge('${id}')">套餐充值</button>`}
   return {'后台账号':`<button class="pri admin-only" onclick="acctDlg()">新增账号</button>`}[cur]||'';
 }
 // 左侧菜单图标：内联 SVG，离线打开也可显示，颜色跟随菜单文字。
@@ -634,7 +646,7 @@ function detailTabs(items,body,note=''){
 function setDetailTab(tab){detail.tab=tab;render()}
 function userPage(id){
   const u=U(id),my=teams.filter(t=>t.members.some(m=>m[0]===id)),batches=ub[id]||[];
-  const info=detailOverview({caption:'昵称',name:u.nick,identity:[[['用户ID',u.id],['手机号',phone(u.phone)]]],metrics:[['个人积分',n(u.pts)],['会员档位',u.vip],['会员到期',u.exp]],times:[['注册时间',u.reg],['最近登录',u.last]]});
+  const info=detailOverview({caption:'昵称',name:u.nick,identity:[[['用户ID',u.id],['手机号',phone(u.phone)]],[['企业名称',u.corp||'—']]],metrics:[['个人积分',n(u.pts)],['会员档位',u.vip],['会员到期',u.exp]],times:[['注册时间',u.reg],['最近登录',u.last]]});
   const body=detail.tab==='所在团队'
     ?table(['团队','角色','所属小组','团队内积分'],my.map(t=>{const m=t.members.find(m=>m[0]===id);return[`${teamName(t)}（${t.id}）`,m[1]==='主账号'?'<span class="tag b">主账号</span>':m[1],m[2],n(m[3])]}),'暂未加入团队')
     :ptable(['批次ID','来源','初始积分','剩余积分','过期时间'],batches.map(b=>[b.id,b.src,n(b.pts),n(b.left),b.exp]),null,'D:批次');
@@ -642,7 +654,7 @@ function userPage(id){
 }
 function teamPage(id){
   const t=teams.find(t=>t.id===id),owner=U(t.owner);
-  const info=detailOverview({caption:'团队名称',name:teamName(t),identity:[[['团队ID',t.id]],[['主账号',owner.nick],['手机号',phone(owner.phone)]]],metrics:[['团队积分',n(teamPts(t))],['成员数',t.members.length+'/50'],['累计实付','¥'+n(t.paid)]],times:[['开通时间',t.created],['最近充值',t.lastPay]]});
+  const info=detailOverview({caption:'团队名称',name:teamName(t),identity:[[['团队ID',t.id],['企业名称',t.corp||'—']],[['主账号',owner.nick],['手机号',phone(owner.phone)]]],metrics:[['团队积分',n(teamPts(t))],['成员数',t.members.length+'/50'],['累计实付','¥'+n(t.paid)]],times:[['开通时间',t.created],['最近充值',t.lastPay]]});
   const body=detail.tab==='积分批次'
     ?ptable(['批次ID','来源','初始积分','剩余积分','其中主账号','预扣中','过期时间'],t.batches.map(b=>[b.id,b.src,n(b.pts),n(b.left+(b.dist||0)),n(b.left),n(b.held||0),b.exp]),null,'D:批次')
     :ptable(['手机号','昵称','角色','所属小组','积分余额'],t.members.map(m=>[phone(U(m[0]).phone),U(m[0]).nick,m[1]==='主账号'?'<span class="tag b">主账号</span>':m[1],m[2],n(m[3])]),null,'D:成员');
